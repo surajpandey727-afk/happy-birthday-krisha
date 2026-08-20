@@ -6,6 +6,7 @@ import { SiteSidebar } from '@/components/world/SiteSidebar';
 import { ContentFrame } from '@/components/world/ContentFrame';
 import { PwaRegister } from '@/components/world/PwaRegister';
 import { DebugPanel } from '@/components/world/DebugPanel';
+import { FloatingSpotifyPlayer } from '@/components/spotify/FloatingSpotifyPlayer';
 
 const display = Cormorant_Garamond({
   subsets: ['latin'],
@@ -100,6 +101,7 @@ export default function RootLayout({
       <body className="grain">
         <ContentFrame>{children}</ContentFrame>
         <SiteSidebar />
+        <FloatingSpotifyPlayer />
         <EggToast />
         <PwaRegister />
         <DebugPanel />

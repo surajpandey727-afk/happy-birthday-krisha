@@ -68,6 +68,7 @@
   --animate-float: float 9s ease-in-out infinite;
   --animate-bob: bob 5s ease-in-out infinite;
   --animate-drift: drift 14s ease-in-out infinite;
+  --animate-vinyl: vinylSpin 3.2s linear infinite;
 }
 
 @keyframes float {
@@ -82,6 +83,11 @@
   0%, 100% { transform: translate(0, 0); }
   25% { transform: translate(10px, -16px); }
   60% { transform: translate(-8px, -10px); }
+}
+
+@keyframes vinylSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes drawStream {
