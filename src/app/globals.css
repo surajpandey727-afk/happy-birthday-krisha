@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  /* ---- c o l o u r ---- */
+  /* ---- c o l o u r (legacy palette — still consumed by most pages;
+     being migrated to the palette below page-by-page in the /impeccable
+     visual-refinement pass, not deleted out from under working UI) ---- */
   --color-ultramarine: #3027a0;
   --color-ultramarine-deep: #1d1666;
   --color-ultramarine-soft: #5650c2;
@@ -16,19 +18,57 @@
   --color-ink-soft: #5a5477;
   --color-mist: #e6e9f4;
 
-  /* ---- t y p e ---- */
+  /* ---- c o l o u r — luxury retro-futurism palette (new design system) ----
+     Background: near-black blue → espresso brown. Accent: ultramarine /
+     royal blue, with restrained bronze-brown and warm parchment for
+     contrast. This is the palette new work should be built in. */
+  --color-void: #08090d;
+  --color-base: #101018;
+  --color-surface: #161218;
+  --color-surface-alt: #1d1717;
+
+  --color-brown-deep: #3a2820;
+  --color-brown: #4b3226;
+  --color-brown-warm: #6a4632;
+
+  --color-royal-deep: #111f52;
+  --color-royal: #162b70;
+  --color-royal-bright: #203a8e;
+  --color-royal-vivid: #28479e;
+
+  --color-parchment: #efe4d0;
+  --color-parchment-dim: #d7c6aa;
+
+  --color-muted: #a9a19a;
+  --color-muted-dim: #77716b;
+
+  /* ---- t y p e (legacy) ---- */
   --font-display: var(--font-display-serif), ui-serif, Georgia, serif;
   --font-sans: var(--font-sans-outfit), ui-sans-serif, system-ui, sans-serif;
   --font-hand: var(--font-hand-caveat), "Comic Sans MS", cursive;
 
+  /* ---- t y p e — new design system ----
+     Apestron → oversized display/exhibition-title headings (H1).
+     Magnode  → Bauhaus/Art-Deco secondary display (H2/H3).
+     Nebulica → futuristic uppercase labels, small display moments.
+     Monigue  → editorial/intimate supporting copy where extra warmth
+     is wanted over the default body sans. Body text stays on --font-sans
+     for legibility — none of these four replace it. */
+  --font-apestron: var(--font-apestron-src), ui-sans-serif, system-ui, sans-serif;
+  --font-magnode: var(--font-magnode-src), ui-sans-serif, system-ui, sans-serif;
+  --font-nebulica: var(--font-nebulica-src), ui-sans-serif, system-ui, sans-serif;
+  --font-monigue: var(--font-monigue-src), ui-serif, Georgia, serif;
+
   --shadow-soft: 0 18px 50px -22px rgba(29, 22, 102, 0.35);
   --shadow-card: 0 24px 60px -28px rgba(29, 22, 102, 0.45);
+  --shadow-luxe: 0 32px 80px -30px rgba(4, 5, 10, 0.65);
 
   --radius-luxe: 22px;
 
   --animate-float: float 9s ease-in-out infinite;
   --animate-bob: bob 5s ease-in-out infinite;
   --animate-drift: drift 14s ease-in-out infinite;
+  --animate-vinyl: vinylSpin 3.2s linear infinite;
 }
 
 @keyframes float {
@@ -43,6 +83,11 @@
   0%, 100% { transform: translate(0, 0); }
   25% { transform: translate(10px, -16px); }
   60% { transform: translate(-8px, -10px); }
+}
+
+@keyframes vinylSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes drawStream {
@@ -70,8 +115,8 @@ body {
 
 body {
   margin: 0;
-  background: var(--color-warm-white);
-  color: var(--color-ink);
+  background: var(--color-base);
+  color: var(--color-parchment);
   font-family: var(--font-sans);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -147,6 +192,10 @@ video {
 /* ---- utility classes ---- */
 .font-display { font-family: var(--font-display); }
 .font-hand { font-family: var(--font-hand); }
+.font-apestron { font-family: var(--font-apestron); }
+.font-magnode { font-family: var(--font-magnode); }
+.font-nebulica { font-family: var(--font-nebulica); }
+.font-monigue { font-family: var(--font-monigue); }
 
 .text-balance { text-wrap: balance; }
 
@@ -185,8 +234,22 @@ video {
   }
 }
 
-/* ---- selection ring for interactive room objects ---- */
-.tap-target {
+/* ---- notebook rich-text placeholder ---- */
+.notebook-editable:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-muted-dim);
+  pointer-events: none;
+}
+
+/* ---- selection ring for interactive room objects ----
+ * Declared via @utility (not a plain class) so it participates in
+ * Tailwind's own utilities cascade layer — a plain class here cascades
+ * after every Tailwind utility (since @import "tailwindcss" expands at
+ * the top of this file), which silently beat responsive variants like
+ * md:hidden on any element also carrying tap-target: the unconditional
+ * `display: inline-flex` below would win over `.md\:hidden{display:none}`
+ * at every viewport width, not just below the breakpoint. */
+@utility tap-target {
   min-width: 48px;
   min-height: 48px;
   display: inline-flex;

@@ -50,17 +50,21 @@ export function PlaceholderFigure({
   );
 }
 
-/** Renders a Media object — a real img or a placeholder, with fade-in. */
+/** Renders a Media object — a real img or a placeholder, with fade-in.
+ * variant="thumb" prefers media.thumb (falls back to src) — use it in any
+ * grid/wall context so tiles load the ~30KB thumbnail, not the full image. */
 export function MediaFigure({
   media,
   className = '',
   eager = false,
   label,
+  variant = 'full',
 }: {
   media: Media;
   className?: string;
   eager?: boolean;
   label?: string;
+  variant?: 'full' | 'thumb';
 }) {
   const [loaded, setLoaded] = useState(eager || !isPlaceholder(media.src));
   const [err, setErr] = useState(false);
@@ -76,9 +80,11 @@ export function MediaFigure({
     );
   }
 
+  const resolvedSrc = variant === 'thumb' ? media.thumb ?? media.src : media.src;
+
   return (
     <img
-      src={media.src}
+      src={resolvedSrc}
       alt={media.alt || media.caption || ''}
       loading={eager ? 'eager' : 'lazy'}
       referrerPolicy="no-referrer"

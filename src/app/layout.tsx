@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Outfit, Caveat } from 'next/font/google';
+import { Cormorant_Garamond, Outfit, Caveat, Unbounded, Space_Grotesk, Michroma, Fraunces } from 'next/font/google';
 import './globals.css';
 import { EggToast } from '@/components/ui/EggToast';
-import { Navigation } from '@/components/world/Navigation';
+import { SiteSidebar } from '@/components/world/SiteSidebar';
+import { ContentFrame } from '@/components/world/ContentFrame';
 import { PwaRegister } from '@/components/world/PwaRegister';
 import { DebugPanel } from '@/components/world/DebugPanel';
+import { FloatingSpotifyPlayer } from '@/components/spotify/FloatingSpotifyPlayer';
 
 const display = Cormorant_Garamond({
   subsets: ['latin'],
@@ -22,6 +24,37 @@ const hand = Caveat({
   subsets: ['latin'],
   weight: ['400', '600', '700'],
   variable: '--font-hand-caveat',
+});
+
+/* ---- new design-system typefaces (see design tokens in globals.css) ----
+ * Stand-ins for the brief's Apestron / Magnode / Nebulica / Monigue, which
+ * aren't available as licensable web fonts — swap the `next/font/google`
+ * imports below for real font files later; every consumer reads the
+ * --font-apestron/-magnode/-nebulica/-monigue CSS vars, so that's a
+ * one-place change. */
+const apestron = Unbounded({
+  subsets: ['latin'],
+  weight: ['500', '700', '800', '900'],
+  variable: '--font-apestron-src',
+});
+
+const magnode = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-magnode-src',
+});
+
+const nebulica = Michroma({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-nebulica-src',
+});
+
+const monigue = Fraunces({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-monigue-src',
 });
 
 export const metadata: Metadata = {
@@ -52,7 +85,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
-  themeColor: '#3027a0',
+  themeColor: '#101018',
 };
 
 export default function RootLayout({
@@ -61,10 +94,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${hand.variable}`}>
+    <html
+      lang="en"
+      className={`${display.variable} ${sans.variable} ${hand.variable} ${apestron.variable} ${magnode.variable} ${nebulica.variable} ${monigue.variable}`}
+    >
       <body className="grain">
-        {children}
-        <Navigation />
+        <ContentFrame>{children}</ContentFrame>
+        <SiteSidebar />
+        <FloatingSpotifyPlayer />
         <EggToast />
         <PwaRegister />
         <DebugPanel />

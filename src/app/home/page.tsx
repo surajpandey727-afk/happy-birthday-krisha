@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NOTES } from '@content/site';
@@ -9,8 +9,8 @@ import { fireEgg } from '@/lib/easterEggEngine';
 import { pushToast } from '@/lib/eggBus';
 import { sound } from '@/lib/sounds';
 import { haptics } from '@/lib/haptics';
-import { totalPuzzles, subscribeTotals } from '@/games/framework/progress';
-import { PHOTO_DB } from '@content/photos';
+import { totalPuzzles, subscribeTotals } from '@/lib/progress';
+import { PHOTO_PREVIEW } from '@content/photos';
 import { MediaFigure } from '@/components/media/MediaFigure';
 
 /* ---------- tiny hand-drawn icons for the room objects ---------- */
@@ -57,6 +57,14 @@ function Icon({ name }: { name: string }) {
           <path d="M18 20 L30 8" {...common} />
         </svg>
       );
+    case 'case':
+      return (
+        <svg viewBox="0 0 48 48" className="h-10 w-10">
+          <rect x="6" y="16" width="36" height="24" rx="3" {...common} />
+          <path d="M18 16 v-4 a2 2 0 0 1 2 -2 h8 a2 2 0 0 1 2 2 v4" {...common} />
+          <path d="M6 26 h36" {...common} />
+        </svg>
+      );
     case 'jar':
       return (
         <svg viewBox="0 0 48 48" className="h-10 w-10">
@@ -80,9 +88,7 @@ function Icon({ name }: { name: string }) {
 
 const OBJECTS = [
   { id: 'us', label: 'a wall of us', icon: 'frame', href: '/us' },
-  { id: 'videos', label: 'the screen', icon: 'tv', href: '/videos' },
-  { id: 'letters', label: 'the desk', icon: 'letter', href: '/letters' },
-  { id: 'play', label: 'the games table', icon: 'play', href: '/play' },
+  { id: 'case', label: 'the case', icon: 'case', href: '/case' },
   { id: 'doodle', label: 'the notebook', icon: 'doodle', href: '/doodle' },
   { id: 'little', label: 'little things', icon: 'jar', href: '/little-things' },
 ] as const;
@@ -97,14 +103,23 @@ export default function HomeWorld() {
 
   useEffect(() => subscribeTotals(() => setPuzzles(totalPuzzles())), []);
 
-  const hour = new Date().getHours();
-  const sky = useMemo(() => {
-    if (hour < 6) return 'linear-gradient(180deg,#1d1666,#3027a0 55%,#9b9be0)';
-    if (hour < 17) return 'linear-gradient(180deg,#9b9be0,#e6e9f4 60%,#f6c4d6)';
-    return 'linear-gradient(180deg,#3027a0,#1d1666 60%,#5650c2)';
-  }, [hour]);
+  // Time-of-day and the random note are client-only (server has no "now" or
+  // randomness to agree on), so they're picked post-mount to avoid a
+  // hydration mismatch — the SSR/first-paint value is a fixed daytime default.
+  const [sky, setSky] = useState('linear-gradient(180deg,#9b9be0,#e6e9f4 60%,#f6c4d6)');
+  const [note, setNote] = useState<(typeof NOTES)[number]>(NOTES[0]);
 
-  const note = useMemo(() => NOTES[Math.floor(Math.random() * NOTES.length)], []);
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setSky(
+      hour < 6
+        ? 'linear-gradient(180deg,#1d1666,#3027a0 55%,#9b9be0)'
+        : hour < 17
+          ? 'linear-gradient(180deg,#9b9be0,#e6e9f4 60%,#f6c4d6)'
+          : 'linear-gradient(180deg,#3027a0,#1d1666 60%,#5650c2)'
+    );
+    setNote(NOTES[Math.floor(Math.random() * NOTES.length)]);
+  }, []);
 
   const onMoonTap = () => {
     sound.tap();
@@ -135,7 +150,7 @@ export default function HomeWorld() {
     return () => window.clearTimeout(t);
   }, [eggSeen]);
 
-  const polaroids = PHOTO_DB.slice(0, 3);
+  const polaroids = PHOTO_PREVIEW.slice(0, 3);
 
   return (
     <main className="safe-top min-h-dvh pb-32 safe-bottom">
@@ -224,7 +239,7 @@ export default function HomeWorld() {
                   className={`w-24 rounded-md bg-warm-white p-1.5 pb-2 shadow-soft transition-transform hover:-translate-y-1.5 sm:w-28 ${i === 1 ? 'rotate-2' : i === 2 ? '-rotate-3' : '-rotate-1'}`}
                 >
                   <div className="aspect-square overflow-hidden rounded-sm">
-                    <MediaFigure media={ph} className="h-full w-full object-cover" />
+                    <MediaFigure media={ph} variant="thumb" className="h-full w-full object-cover" />
                   </div>
                   <p className="mt-1 text-center font-hand text-xs text-ink-soft">{ph.caption}</p>
                 </Link>

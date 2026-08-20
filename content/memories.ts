@@ -1,5 +1,5 @@
 import type { Memory } from "@/lib/types";
-import { PHOTOS } from "./photos";
+import { PHOTO_PREVIEW as PHOTOS } from "./photos";
 
 /**
  * Memories — the reusable memory engine. Each memory pulls from the shared

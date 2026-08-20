@@ -132,7 +132,7 @@ export default function MemoriesPage() {
                       }}
                       className="h-28 w-28 shrink-0 overflow-hidden rounded-xl shadow-soft"
                     >
-                      <MediaFigure media={m} className="h-full w-full object-cover" />
+                      <MediaFigure media={m} variant="thumb" className="h-full w-full object-cover" />
                     </button>
                   ))}
                 </div>
