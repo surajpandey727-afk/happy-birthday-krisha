@@ -234,6 +234,13 @@ video {
   }
 }
 
+/* ---- notebook rich-text placeholder ---- */
+.notebook-editable:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-muted-dim);
+  pointer-events: none;
+}
+
 /* ---- selection ring for interactive room objects ---- */
 .tap-target {
   min-width: 48px;

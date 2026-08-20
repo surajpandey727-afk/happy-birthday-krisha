@@ -20,7 +20,7 @@ export const NAV = [
   { href: "/us", label: "us", tag: "a wall of us" },
   { href: "/memories", label: "memories", tag: "remember this?" },
   { href: "/case", label: "the case", tag: "a small investigation" },
-  { href: "/doodle", label: "doodle", tag: "paper & pen" },
+  { href: "/doodle", label: "notebook", tag: "paper & pen" },
   { href: "/little-things", label: "little things", tag: "today's little thing" },
 ] as const;
 
