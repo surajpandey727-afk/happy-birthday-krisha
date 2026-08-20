@@ -5,9 +5,11 @@
  * Capacity = max segments per bottle. A level is solved when every bottle is
  * empty or a full single colour.
  *
- * Generator: start from the solved arrangement, apply random LEGAL reverse
- * pours (each reversible ⇒ always solvable), then verify with a BFS solver so
- * no impossible level is ever produced.
+ * Note on generation: a mixed board can never be reached from a solved board
+ * through legal pours (every pour moves a contiguous same-colour stack), so
+ * levels are generated the correct way: random board → BFS-solve → validate →
+ * score → accept. The solver uses parent pointers (not path copies) and a time
+ * budget, so validation is fast enough to run on device.
  */
 
 import { mulberry32, hashSeed, shuffle } from "@/lib/seededRandom";
@@ -23,17 +25,17 @@ export interface LiquidLevel {
 export function bandParams(band: DifficultyBand, levelId: number) {
   switch (band) {
     case "tutorial":
-      return { colors: 3, cap: 3, empties: 2, scramble: [6, 12] };
+      return { colors: 3, cap: 3, empties: 2 };
     case "beginner":
-      return { colors: 4 + (levelId % 2), cap: 4, empties: 2, scramble: [14, 26] };
+      return { colors: 4 + (levelId % 2), cap: 4, empties: 2 };
     case "intermediate":
-      return { colors: 5 + (levelId % 2), cap: 4, empties: 2, scramble: [22, 40] };
+      return { colors: 5 + (levelId % 2), cap: 4, empties: 2 };
     case "advanced":
-      return { colors: 6 + (levelId % 2), cap: 4, empties: 2, scramble: [30, 52] };
+      return { colors: 6, cap: 4, empties: 2 };
     case "expert":
-      return { colors: 7 + (levelId % 2), cap: 4, empties: 2, scramble: [38, 64] };
+      return { colors: 7, cap: 4, empties: 2 };
     case "infinite":
-      return { colors: 5 + (levelId % 4), cap: 4, empties: 2, scramble: [24, 56] };
+      return { colors: 5 + (levelId % 3), cap: 4, empties: 2 };
   }
 }
 
@@ -66,8 +68,6 @@ export function isComplete(bottles: number[][], cap: number): boolean {
     (b) => b.length === 0 || (b.length === cap && new Set(b).size === 1)
   );
 }
-
-
 
 /** Desired solution-length band per difficulty (controls how hard a level feels). */
 function solLenBand(band: DifficultyBand): [number, number] {
@@ -175,33 +175,51 @@ function stateKey(bottles: number[][], cap: number): string {
 }
 
 /**
- * BFS solver. Returns the move sequence to solve, or null if unsolvable.
- * Never returns an impossible board — this is the validation step the
- * generator depends on.
+ * BFS solver with parent pointers + time/node budget. Returns the move
+ * sequence, or null if unsolvable (or too expensive — treated as a reject).
  */
-export function solveLiquid(initial: number[][], cap: number): Move[] | null {
+export function solveLiquid(
+  initial: number[][],
+  cap: number,
+  opts?: { budgetMs?: number; maxNodes?: number }
+): Move[] | null {
+  const budgetMs = opts?.budgetMs ?? 160;
+  const maxNodes = opts?.maxNodes ?? 50000;
+  const t0 = Date.now();
+
   const startKey = stateKey(initial, cap);
-  const visited = new Set<string>([startKey]);
-  type Q = { bottles: number[][]; path: Move[] };
-  const queue: Q[] = [{ bottles: initial, path: [] }];
+  const visited = new Map<string, number>([[startKey, 0]]);
+  const parents: number[] = [-1];
+  const parentMoves: Move[] = [{ from: -1, to: -1 }];
+  const queue: number[][][] = [initial];
   let qi = 0;
-  const MAX_Q = 140000;
+
   while (qi < queue.length) {
+    if ((qi & 1023) === 0 && Date.now() - t0 > budgetMs) return null;
     const cur = queue[qi++];
-    if (isComplete(cur.bottles, cap)) return cur.path;
-    for (let i = 0; i < cur.bottles.length; i++) {
-      for (let j = 0; j < cur.bottles.length; j++) {
+    if (isComplete(cur, cap)) {
+      const path: Move[] = [];
+      let node = qi - 1;
+      while (node !== 0) {
+        path.unshift(parentMoves[node]);
+        node = parents[node];
+      }
+      return path;
+    }
+    for (let i = 0; i < cur.length; i++) {
+      for (let j = 0; j < cur.length; j++) {
         if (i === j) continue;
-        const p = tryPour(cur.bottles, i, j, cap);
+        const p = tryPour(cur, i, j, cap);
         if (!p) continue;
         const k = stateKey(p.next, cap);
         if (visited.has(k)) continue;
-        visited.add(k);
-        queue.push({ bottles: p.next, path: [...cur.path, { from: i, to: j }] });
-        if (queue.length > MAX_Q) return null; // state space too large — reject
+        visited.set(k, queue.length);
+        parents.push(qi - 1);
+        parentMoves.push({ from: i, to: j });
+        queue.push(p.next);
+        if (queue.length > maxNodes) return null;
       }
     }
   }
   return null;
 }
-

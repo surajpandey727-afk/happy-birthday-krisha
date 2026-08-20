@@ -28,3 +28,7 @@ next-env.d.ts
 
 # tests
 /coverage
+
+# raw source media (not the optimized app-facing assets in public/media)
+/Media Gallery/
+server.log
