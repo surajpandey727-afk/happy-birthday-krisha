@@ -118,9 +118,12 @@ export function FloatingSpotifyPlayer() {
 
             {!spotifyConfig.configured ? (
               <div className="px-4 pb-4 pt-2">
-                <p className="font-monigue text-sm italic text-muted">
-                  no playlist configured yet — set NEXT_PUBLIC_SPOTIFY_PLAYLIST_URI to wire this in.
-                </p>
+                <p className="font-monigue text-sm italic text-muted">the mixtape isn&rsquo;t plugged in yet.</p>
+                {process.env.NODE_ENV === 'development' && (
+                  <p className="mt-1 text-xs text-muted-dim">
+                    (dev only) set NEXT_PUBLIC_SPOTIFY_PLAYLIST_URI to wire this in.
+                  </p>
+                )}
               </div>
             ) : (
               <>

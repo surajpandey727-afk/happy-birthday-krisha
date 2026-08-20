@@ -7,6 +7,7 @@ import { NAV } from '@content/site';
 import { sound } from '@/lib/sounds';
 import { markBackHome } from '@/lib/easterEggEngine';
 import LineSidebar from '@/components/reactbits/LineSidebar';
+import { usePrefersReducedMotion } from '@/hooks/useMedia';
 
 const ITEMS = NAV.map((n) => ({ label: n.label, href: n.href }));
 
@@ -24,6 +25,7 @@ export function SiteSidebar() {
   const [mounted, setMounted] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const lastHome = useRef('');
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => setMounted(true), []);
 
@@ -54,7 +56,8 @@ export function SiteSidebar() {
           markerColor="var(--color-brown-warm)"
           fontSize={1}
           proximityRadius={90}
-          maxShift={14}
+          maxShift={reduced ? 0 : 14}
+          scaleTick={!reduced}
           itemGap={22}
           onItemClick={() => sound.tap()}
         />

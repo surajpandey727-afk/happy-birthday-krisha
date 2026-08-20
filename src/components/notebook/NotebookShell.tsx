@@ -203,7 +203,11 @@ export function NotebookShell() {
         </button>
 
         <div className="flex max-h-[60vh] flex-col gap-1 overflow-y-auto lg:max-h-[70vh]">
-          {filtered.length === 0 && <p className="font-monigue text-sm italic text-muted">nothing here yet.</p>}
+          {filtered.length === 0 && (
+            <p className="font-monigue text-sm italic text-muted">
+              {notes.length === 0 ? 'not a single page yet.' : 'nothing matches that.'}
+            </p>
+          )}
           {filtered.map((note) => (
             <button
               key={note.id}
@@ -230,9 +234,9 @@ export function NotebookShell() {
       <div className={`${mobileView === 'list' ? 'hidden lg:block' : ''}`}>
         {!active ? (
           <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-brown-warm/40 text-center">
-            <p className="font-monigue text-sm italic text-muted">no page open.</p>
+            <p className="font-monigue text-sm italic text-muted">the first page is still blank.</p>
             <button onClick={createNote} className="font-nebulica text-[10px] uppercase tracking-[0.3em] text-royal-vivid underline underline-offset-4">
-              start one
+              start writing
             </button>
           </div>
         ) : (

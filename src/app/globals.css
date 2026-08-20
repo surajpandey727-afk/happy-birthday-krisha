@@ -241,8 +241,15 @@ video {
   pointer-events: none;
 }
 
-/* ---- selection ring for interactive room objects ---- */
-.tap-target {
+/* ---- selection ring for interactive room objects ----
+ * Declared via @utility (not a plain class) so it participates in
+ * Tailwind's own utilities cascade layer — a plain class here cascades
+ * after every Tailwind utility (since @import "tailwindcss" expands at
+ * the top of this file), which silently beat responsive variants like
+ * md:hidden on any element also carrying tap-target: the unconditional
+ * `display: inline-flex` below would win over `.md\:hidden{display:none}`
+ * at every viewport width, not just below the breakpoint. */
+@utility tap-target {
   min-width: 48px;
   min-height: 48px;
   display: inline-flex;
