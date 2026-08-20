@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Outfit, Caveat, Unbounded, Space_Grotesk, Michroma, Fraunces } from 'next/font/google';
+import { Outfit, Unbounded, Space_Grotesk, Michroma, Fraunces } from 'next/font/google';
 import './globals.css';
 import { EggToast } from '@/components/ui/EggToast';
 import { SiteSidebar } from '@/components/world/SiteSidebar';
@@ -8,25 +8,12 @@ import { PwaRegister } from '@/components/world/PwaRegister';
 import { DebugPanel } from '@/components/world/DebugPanel';
 import { FloatingSpotifyPlayer } from '@/components/spotify/FloatingSpotifyPlayer';
 
-const display = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-display-serif',
-});
-
 const sans = Outfit({
   subsets: ['latin'],
   variable: '--font-sans-outfit',
 });
 
-const hand = Caveat({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
-  variable: '--font-hand-caveat',
-});
-
-/* ---- new design-system typefaces (see design tokens in globals.css) ----
+/* ---- design-system typefaces (see design tokens in globals.css) ----
  * Stand-ins for the brief's Apestron / Magnode / Nebulica / Monigue, which
  * aren't available as licensable web fonts — swap the `next/font/google`
  * imports below for real font files later; every consumer reads the
@@ -96,7 +83,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${sans.variable} ${hand.variable} ${apestron.variable} ${magnode.variable} ${nebulica.variable} ${monigue.variable}`}
+      className={`${sans.variable} ${apestron.variable} ${magnode.variable} ${nebulica.variable} ${monigue.variable}`}
     >
       <body className="grain">
         <ContentFrame>{children}</ContentFrame>

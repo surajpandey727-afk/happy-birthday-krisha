@@ -57,14 +57,14 @@ export function DebugPanel() {
   return (
     <>
       {open && (
-        <div className="fixed left-4 top-4 z-[200] w-72 rounded-2xl bg-ink p-4 text-warm-white shadow-card">
+        <div className="fixed left-4 top-4 z-[200] w-72 rounded-2xl bg-void p-4 text-parchment shadow-luxe">
           <div className="mb-2 flex items-center justify-between">
-            <p className="font-hand text-2xl">dev room</p>
+            <p className="font-magnode text-xl">dev room</p>
             <button aria-label="close" className="tap-target text-sm" onClick={() => setOpen(false)}>
               ✕
             </button>
           </div>
-          <p className="mb-2 text-xs text-pink-cloud">{fps != null ? `${fps} fps` : 'measuring…'}</p>
+          <p className="mb-2 text-xs text-royal-vivid">{fps != null ? `${fps} fps` : 'measuring…'}</p>
 
           <div className="flex flex-col gap-1.5 text-sm">
             <Link href="/case" className="rounded-lg bg-white/10 px-3 py-2 hover:bg-white/20">jump → the case</Link>

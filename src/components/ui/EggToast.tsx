@@ -40,7 +40,7 @@ export function EggToast() {
           <motion.button
             key={t.id}
             onClick={() => dismiss(t.id)}
-            className="glass rounded-2xl px-5 py-3 font-hand text-2xl text-ink shadow-soft"
+            className="font-monigue glass rounded-2xl px-5 py-3 text-lg italic text-parchment shadow-luxe"
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.95 }}

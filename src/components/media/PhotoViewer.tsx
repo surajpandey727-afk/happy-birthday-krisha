@@ -55,7 +55,7 @@ export function PhotoViewer({
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-ultramarine-deep/90 backdrop-blur-md"
+        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-void/90 backdrop-blur-md"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
       >
@@ -67,10 +67,10 @@ export function PhotoViewer({
           transition={{ type: 'spring', stiffness: 220, damping: 26 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/15 paper">
+          <div className="rounded-2xl overflow-hidden shadow-luxe ring-1 ring-royal-vivid/25 paper">
             <MediaFigure media={media} className="max-h-[74dvh] max-w-[92vw] object-contain" eager />
           </div>
-          <p className="mt-4 text-center font-hand text-2xl text-pink-cloud">
+          <p className="font-monigue mt-4 text-center text-xl italic text-parchment-dim">
             {media.caption || 'us'}
           </p>
         </motion.div>
@@ -79,14 +79,14 @@ export function PhotoViewer({
           <>
             <button
               aria-label="previous photo"
-              className="tap-target absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 rounded-full glass text-ink hover:scale-110 transition-transform"
+              className="tap-target absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 rounded-full glass text-parchment hover:scale-110 transition-transform"
               onClick={(e) => { e.stopPropagation(); prev(); }}
             >
               ‹
             </button>
             <button
               aria-label="next photo"
-              className="tap-target absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 rounded-full glass text-ink hover:scale-110 transition-transform"
+              className="tap-target absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 rounded-full glass text-parchment hover:scale-110 transition-transform"
               onClick={(e) => { e.stopPropagation(); next(); }}
             >
               ›
@@ -96,7 +96,7 @@ export function PhotoViewer({
 
         <button
           aria-label="close"
-          className="tap-target absolute top-4 right-4 rounded-full glass text-ink hover:rotate-90 transition-transform duration-300"
+          className="tap-target absolute top-4 right-4 rounded-full glass text-parchment hover:rotate-90 transition-transform duration-300"
           onClick={(e) => { e.stopPropagation(); onClose(); }}
         >
           ✕

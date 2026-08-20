@@ -101,7 +101,7 @@ export default function UsPage() {
                     sound.tap();
                     setOpenIdx(i);
                   }}
-                  className="mb-4 block w-full break-inside-avoid rounded-md bg-warm-white p-2 pb-3 text-left shadow-soft transition-transform hover:-translate-y-1.5 hover:shadow-card"
+                  className="mb-4 block w-full break-inside-avoid rounded-md border border-brown-warm/40 bg-surface-alt p-2 pb-3 text-left shadow-[0_14px_30px_-16px_rgba(0,0,0,0.75)] transition-transform hover:-translate-y-1.5"
                   style={{ rotate: `${rotate}deg` }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ export default function UsPage() {
                   <div className="overflow-hidden rounded-sm">
                     <MediaFigure media={ph} variant="thumb" className="aspect-[4/5] w-full object-cover" />
                   </div>
-                  {ph.caption && <p className="mt-1.5 px-1 font-hand text-lg text-ink">{ph.caption}</p>}
+                  {ph.caption && <p className="font-monigue mt-1.5 px-1 text-sm italic text-muted-dim">{ph.caption}</p>}
                 </motion.button>
               ))}
             </div>
@@ -119,7 +119,7 @@ export default function UsPage() {
         )}
       </AnimatePresence>
 
-      <p className="mt-6 text-center font-hand text-xl text-ink-soft">
+      <p className="font-monigue mt-6 text-center text-lg italic text-muted">
         {NOTES[3].text}
       </p>
 

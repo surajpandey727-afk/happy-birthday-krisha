@@ -23,10 +23,10 @@ export default function SecretRoomPage() {
   };
 
   return (
-    <main className="safe-top min-h-dvh bg-[radial-gradient(120%_120%_at_50%_0%,#1d1666,#0f0b34)] pb-32 safe-bottom">
+    <main className="safe-top min-h-dvh bg-[radial-gradient(120%_120%_at_50%_0%,var(--color-royal-deep),var(--color-void))] pb-32 safe-bottom">
       <div className="mx-auto flex min-h-dvh max-w-2xl flex-col items-center justify-center px-6 py-16 text-center">
         <motion.p
-          className="text-[11px] uppercase tracking-[0.5em] text-pink-cloud/70"
+          className="font-nebulica text-[10px] uppercase tracking-[0.5em] text-royal-vivid/80"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -35,7 +35,7 @@ export default function SecretRoomPage() {
 
         {/* constellation */}
         <motion.div
-          className="mt-8 flex items-center gap-6 font-display"
+          className="font-apestron mt-8 flex items-center gap-6"
           initial="hidden"
           animate="show"
           variants={{ hidden: {}, show: { transition: { staggerChildren: 0.5, delayChildren: 0.4 } } }}
@@ -50,10 +50,10 @@ export default function SecretRoomPage() {
                 show: { opacity: 1, scale: 1, rotate: 0 },
               }}
               transition={{ type: 'spring', stiffness: 200, damping: 16 }}
-              className={`flex h-12 w-10 items-center justify-center text-3xl sm:text-5xl transition-colors duration-500 ${
-                i === 1 ? 'text-flamingo' : 'text-warm-white/80'
-              } ${lit > 0 ? 'text-shadow' : ''} ${lit >= i ? '' : 'opacity-60'}`}
-              style={{ textShadow: lit > 0 ? '0 0 18px rgba(239,106,156,0.6)' : 'none' }}
+              className={`flex h-12 w-10 items-center justify-center text-3xl transition-colors duration-500 sm:text-5xl ${
+                i === 1 ? 'text-royal-vivid' : 'text-parchment/80'
+              } ${lit >= i ? '' : 'opacity-60'}`}
+              style={{ textShadow: lit > 0 ? '0 0 18px color-mix(in srgb, var(--color-royal-vivid) 60%, transparent)' : 'none' }}
             >
               {ch}
             </motion.button>
@@ -61,7 +61,7 @@ export default function SecretRoomPage() {
         </motion.div>
 
         <motion.p
-          className="mt-8 font-hand text-2xl text-pink-cloud"
+          className="font-monigue mt-8 text-lg italic text-muted"
           initial={{ opacity: 0 }}
           animate={{ opacity: revealed ? 1 : 0 }}
           transition={{ duration: 1 }}
@@ -78,7 +78,7 @@ export default function SecretRoomPage() {
                 sound.tap();
                 pushToast(m.note ?? 'this one stays between us.');
               }}
-              className="rounded-2xl border border-dashed border-pink-cloud/50 bg-white/5 px-5 py-4 font-hand text-2xl text-pink-cloud hover:border-flamingo hover:bg-white/10 transition-colors"
+              className="font-monigue rounded-2xl border border-dashed border-royal-vivid/40 bg-white/[0.03] px-5 py-4 text-lg italic text-parchment transition-colors hover:border-royal-vivid hover:bg-white/[0.06]"
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -90,7 +90,7 @@ export default function SecretRoomPage() {
         </div>
 
         <motion.p
-          className="mt-12 text-[10px] uppercase tracking-[0.4em] text-warm-white/30"
+          className="font-nebulica mt-12 text-[10px] uppercase tracking-[0.4em] text-muted-dim/60"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}

@@ -18,7 +18,7 @@ export function renderHeartWords(msg: string) {
     <span key={i}>
       {part}
       {i < arr.length - 1 && (
-        <span className="mx-0.5 inline-block text-flamingo" aria-hidden>
+        <span className="mx-0.5 inline-block text-royal-vivid" aria-hidden>
           ❤
         </span>
       )}

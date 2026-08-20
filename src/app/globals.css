@@ -1,24 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* ---- c o l o u r (legacy palette — still consumed by most pages;
-     being migrated to the palette below page-by-page in the /impeccable
-     visual-refinement pass, not deleted out from under working UI) ---- */
-  --color-ultramarine: #3027a0;
-  --color-ultramarine-deep: #1d1666;
-  --color-ultramarine-soft: #5650c2;
-  --color-periwinkle: #9b9be0;
-  --color-flamingo: #ef6a9c;
-  --color-flamingo-soft: #f79bbd;
-  --color-pink-cloud: #f6c4d6;
-  --color-pink-wash: #fbe6ee;
-  --color-cream: #f6efe4;
-  --color-warm-white: #fdfaf5;
-  --color-ink: #2b2440;
-  --color-ink-soft: #5a5477;
-  --color-mist: #e6e9f4;
-
-  /* ---- c o l o u r — luxury retro-futurism palette (new design system) ----
+  /* ---- c o l o u r — luxury retro-futurism palette ----
      Background: near-black blue → espresso brown. Accent: ultramarine /
      royal blue, with restrained bronze-brown and warm parchment for
      contrast. This is the palette new work should be built in. */
@@ -42,12 +25,9 @@
   --color-muted: #a9a19a;
   --color-muted-dim: #77716b;
 
-  /* ---- t y p e (legacy) ---- */
-  --font-display: var(--font-display-serif), ui-serif, Georgia, serif;
   --font-sans: var(--font-sans-outfit), ui-sans-serif, system-ui, sans-serif;
-  --font-hand: var(--font-hand-caveat), "Comic Sans MS", cursive;
 
-  /* ---- t y p e — new design system ----
+  /* ---- t y p e — design system ----
      Apestron → oversized display/exhibition-title headings (H1).
      Magnode  → Bauhaus/Art-Deco secondary display (H2/H3).
      Nebulica → futuristic uppercase labels, small display moments.
@@ -157,14 +137,14 @@ body {
   pointer-events: none;
   border-radius: inherit;
   background:
-    radial-gradient(120% 90% at 20% 0%, rgba(255,255,255,0.5), transparent 55%),
-    radial-gradient(120% 120% at 80% 110%, var(--color-pink-wash), transparent 60%);
+    radial-gradient(120% 90% at 20% 0%, rgba(255,255,255,0.06), transparent 55%),
+    radial-gradient(120% 120% at 80% 110%, color-mix(in srgb, var(--color-royal) 35%, transparent), transparent 60%);
   mix-blend-mode: soft-light;
 }
 
 /* ---- focus ---- */
 :focus-visible {
-  outline: 2px solid var(--color-flamingo);
+  outline: 2px solid var(--color-royal-vivid);
   outline-offset: 3px;
   border-radius: 6px;
 }
@@ -190,8 +170,6 @@ video {
 }
 
 /* ---- utility classes ---- */
-.font-display { font-family: var(--font-display); }
-.font-hand { font-family: var(--font-hand); }
 .font-apestron { font-family: var(--font-apestron); }
 .font-magnode { font-family: var(--font-magnode); }
 .font-nebulica { font-family: var(--font-nebulica); }
@@ -207,10 +185,58 @@ video {
 }
 
 .glass {
-  background: rgba(253, 250, 245, 0.66);
+  background: color-mix(in srgb, var(--color-surface) 72%, transparent);
   backdrop-filter: blur(18px) saturate(1.1);
   -webkit-backdrop-filter: blur(18px) saturate(1.1);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid color-mix(in srgb, var(--color-brown-warm) 40%, transparent);
+}
+
+/* ---- skeuomorphic tactile surface — the site's one card language.
+ * Layered like real card stock: a faint top-light gradient, a hairline
+ * inset highlight along the top edge, a hairline inset shadow along the
+ * bottom (the "thickness" of the material), and a soft ambient drop
+ * shadow that deepens on hover/focus to read as a physical lift. */
+@utility card-tactile {
+  position: relative;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-surface) 100%, white 5%) 0%,
+    var(--color-surface) 45%,
+    var(--color-surface-alt) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-brown-warm) 50%, transparent);
+  border-radius: var(--radius-luxe);
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in srgb, var(--color-parchment) 10%, transparent),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.5),
+    0 1px 2px 0 rgba(0, 0, 0, 0.4),
+    0 18px 40px -22px rgba(0, 0, 0, 0.7);
+  transition:
+    transform 0.4s var(--ease-luxe),
+    box-shadow 0.4s var(--ease-luxe),
+    border-color 0.4s var(--ease-luxe);
+}
+@utility card-tactile-lift {
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--color-royal-vivid) 55%, transparent);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in srgb, var(--color-parchment) 14%, transparent),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.5),
+      0 2px 4px 0 rgba(0, 0, 0, 0.45),
+      0 28px 56px -24px rgba(0, 0, 0, 0.8),
+      0 0 0 1px color-mix(in srgb, var(--color-royal-vivid) 25%, transparent);
+  }
+}
+/* A recessed variant — for wells/inputs/slots rather than raised tiles. */
+@utility card-inset {
+  background: color-mix(in srgb, var(--color-void) 55%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-brown-warm) 35%, transparent);
+  border-radius: var(--radius-luxe);
+  box-shadow:
+    inset 0 2px 6px 0 rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 0 rgba(0, 0, 0, 0.3);
 }
 
 .safe-top { padding-top: env(safe-area-inset-top); }

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { HERO_MEDIA } from '@content/videos';
 import { SITE } from '@content/site';
-import { isPlaceholder, placeholderMeta } from '@/lib/media';
+import { isPlaceholder } from '@/lib/media';
 import { useIsFirstVisit } from '@/hooks/useVisit';
 import { usePrefersReducedMotion } from '@/hooks/useMedia';
 import { sound, unlockAudio } from '@/lib/sounds';
@@ -19,7 +19,6 @@ export default function HeroPage() {
   const [exiting, setExiting] = useState(false);
   const [slowMo, setSlowMo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const meta = placeholderMeta(HERO_MEDIA.video);
   const isRealVideo = !isPlaceholder(HERO_MEDIA.video);
 
   useEffect(() => {
@@ -54,7 +53,7 @@ export default function HeroPage() {
   };
 
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-ultramarine-deep">
+    <main className="relative h-dvh w-full overflow-hidden bg-void">
       {/* ---- the film ---- */}
       <motion.div
         className="absolute inset-0"
@@ -82,13 +81,13 @@ export default function HeroPage() {
         ) : (
           <div
             className="h-full w-full"
-            style={{ background: `linear-gradient(135deg, ${meta.from}, ${meta.to})` }}
+            style={{ background: `linear-gradient(160deg, var(--color-royal-deep), var(--color-void) 60%, var(--color-surface-alt))` }}
           >
             <motion.div
               className="h-full w-full"
               style={{
                 background:
-                  'radial-gradient(70% 90% at 30% 20%, rgba(255,255,255,0.25), transparent 60%), radial-gradient(80% 100% at 80% 100%, rgba(255,255,255,0.18), transparent 55%)',
+                  'radial-gradient(70% 90% at 30% 20%, color-mix(in srgb, var(--color-royal-vivid) 22%, transparent), transparent 60%), radial-gradient(80% 100% at 80% 100%, color-mix(in srgb, var(--color-brown-warm) 18%, transparent), transparent 55%)',
               }}
               animate={{ scale: [1, 1.06, 1], opacity: [0.7, 1, 0.7] }}
               transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
@@ -97,22 +96,22 @@ export default function HeroPage() {
         )}
 
         {/* colour wash + vignette */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(29,22,102,0.25),rgba(29,22,102,0.05)_40%,rgba(29,22,102,0.55))]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,9,13,0.35),rgba(8,9,13,0.05)_40%,rgba(8,9,13,0.6))]" />
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(120% 100% at 50% 40%, transparent 55%, rgba(16,11,54,0.55))' }}
+          style={{ background: 'radial-gradient(120% 100% at 50% 40%, transparent 55%, rgba(8,9,13,0.65))' }}
         />
 
         {/* blurred light shapes */}
         <motion.div
           className="pointer-events-none absolute -left-20 top-1/4 h-72 w-72 rounded-full blur-3xl"
-          style={{ background: 'rgba(246,196,214,0.35)' }}
+          style={{ background: 'color-mix(in srgb, var(--color-royal-vivid) 32%, transparent)' }}
           animate={{ x: [0, 40, 0], y: [0, -24, 0] }}
           transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
           className="pointer-events-none absolute -right-16 bottom-1/4 h-80 w-80 rounded-full blur-3xl"
-          style={{ background: 'rgba(86,80,194,0.4)' }}
+          style={{ background: 'color-mix(in srgb, var(--color-brown-warm) 30%, transparent)' }}
           animate={{ x: [0, -36, 0], y: [0, 26, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -121,7 +120,7 @@ export default function HeroPage() {
       {/* ---- editorial typography ---- */}
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
         <motion.p
-          className="text-[11px] uppercase tracking-[0.55em] text-warm-white/70"
+          className="font-nebulica text-[10px] uppercase tracking-[0.55em] text-parchment/70"
           initial={{ opacity: 0, letterSpacing: '0.2em' }}
           animate={{ opacity: 1, letterSpacing: '0.55em' }}
           transition={{ duration: 1.6, delay: 0.6, ease: 'easeOut' }}
@@ -129,9 +128,9 @@ export default function HeroPage() {
           {SITE.name}
         </motion.p>
 
-        <h1 className="mt-4 font-display text-[13vw] leading-[0.95] text-warm-white sm:text-[7rem]">
+        <h1 className="font-apestron mt-4 text-[12vw] leading-[0.92] tracking-tight text-parchment sm:text-[6.5rem]">
           <motion.span
-            className="block italic"
+            className="block"
             initial={{ opacity: 0, y: 46, filter: 'blur(14px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1.1, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
@@ -144,12 +143,12 @@ export default function HeroPage() {
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1.1, delay: 1.35, ease: [0.22, 1, 0.36, 1] }}
           >
-            STILL US<span className="text-flamingo">.</span>
+            STILL US<span className="text-royal-vivid">.</span>
           </motion.span>
         </h1>
 
         <motion.p
-          className="mt-5 max-w-xs font-hand text-2xl text-pink-cloud sm:max-w-md sm:text-3xl"
+          className="font-monigue mt-5 max-w-xs text-xl italic text-muted sm:max-w-md sm:text-2xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 2.1 }}
@@ -167,7 +166,7 @@ export default function HeroPage() {
       >
         <button
           onClick={enter}
-          className="group pointer-events-auto flex items-center gap-3 rounded-full glass px-8 py-4 font-hand text-3xl text-ink shadow-soft hover:scale-105 active:scale-95 transition-transform"
+          className="group font-monigue pointer-events-auto flex items-center gap-3 rounded-full glass px-8 py-4 text-2xl italic text-parchment shadow-luxe transition-transform hover:scale-105 active:scale-95"
           aria-label="come in"
         >
           {first ? 'come in.' : 'come back in.'}
@@ -179,7 +178,7 @@ export default function HeroPage() {
 
       {slowMo && (
         <motion.p
-          className="absolute top-6 left-0 right-0 text-center font-hand text-2xl text-pink-cloud/80"
+          className="font-monigue absolute left-0 right-0 top-6 text-center text-xl italic text-muted/80"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
@@ -190,4 +189,3 @@ export default function HeroPage() {
     </main>
   );
 }
-
