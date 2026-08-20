@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { resetTotals } from '@/lib/progress';
+import { resetPuzzle } from '@/lib/puzzleProgress';
 import { resetEggs, loadEggState } from '@/lib/easterEggEngine';
 import { sound } from '@/lib/sounds';
 
@@ -46,6 +47,7 @@ export function DebugPanel() {
 
   const resetAll = () => {
     resetTotals();
+    resetPuzzle();
     resetEggs();
     sound.pop();
   };
@@ -65,6 +67,7 @@ export function DebugPanel() {
           <p className="mb-2 text-xs text-pink-cloud">{fps != null ? `${fps} fps` : 'measuring…'}</p>
 
           <div className="flex flex-col gap-1.5 text-sm">
+            <Link href="/case" className="rounded-lg bg-white/10 px-3 py-2 hover:bg-white/20">jump → the case</Link>
             <Link href="/secret" className="rounded-lg bg-white/10 px-3 py-2 hover:bg-white/20">jump → secret room</Link>
             <button className="rounded-lg bg-white/10 px-3 py-2 text-left hover:bg-white/20" onClick={resetAll}>
               reset all progress + eggs

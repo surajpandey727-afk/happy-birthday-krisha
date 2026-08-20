@@ -57,6 +57,14 @@ function Icon({ name }: { name: string }) {
           <path d="M18 20 L30 8" {...common} />
         </svg>
       );
+    case 'case':
+      return (
+        <svg viewBox="0 0 48 48" className="h-10 w-10">
+          <rect x="6" y="16" width="36" height="24" rx="3" {...common} />
+          <path d="M18 16 v-4 a2 2 0 0 1 2 -2 h8 a2 2 0 0 1 2 2 v4" {...common} />
+          <path d="M6 26 h36" {...common} />
+        </svg>
+      );
     case 'jar':
       return (
         <svg viewBox="0 0 48 48" className="h-10 w-10">
@@ -80,6 +88,7 @@ function Icon({ name }: { name: string }) {
 
 const OBJECTS = [
   { id: 'us', label: 'a wall of us', icon: 'frame', href: '/us' },
+  { id: 'case', label: 'the case', icon: 'case', href: '/case' },
   { id: 'doodle', label: 'the notebook', icon: 'doodle', href: '/doodle' },
   { id: 'little', label: 'little things', icon: 'jar', href: '/little-things' },
 ] as const;
