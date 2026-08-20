@@ -1,5 +1,5 @@
 import type { Media } from "@/lib/types";
-import { PHOTOS } from "./photos";
+import { PHOTO_PREVIEW as PHOTOS } from "./photos";
 import { NOTES, SMILE_NOTES, MISSING_ME_NOTES } from "./site";
 
 /**

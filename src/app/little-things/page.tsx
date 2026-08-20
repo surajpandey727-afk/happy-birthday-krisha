@@ -143,7 +143,7 @@ export default function LittleThingsPage() {
               }}
               className={`h-32 w-32 shrink-0 overflow-hidden rounded-xl shadow-soft ring-1 ring-pink-cloud/40 ${i % 2 ? 'rotate-2' : '-rotate-1'}`}
             >
-              <MediaFigure media={ph} className="h-full w-full object-cover" />
+              <MediaFigure media={ph} variant="thumb" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>

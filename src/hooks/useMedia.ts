@@ -31,6 +31,22 @@ export function usePageVisibility(): boolean {
   return visible;
 }
 
+/** Coarse breakpoint bucket, for components that need to pick JS-side props
+ * (not just CSS) per viewport — e.g. Drift Wall's column count. */
+export function useBreakpoint(): 'mobile' | 'tablet' | 'desktop' {
+  const [bp, setBp] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setBp(w < 640 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop');
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  return bp;
+}
+
 export function useIsTouch(): boolean {
   const [touch, setTouch] = useState(false);
   useEffect(() => {

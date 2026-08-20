@@ -10,7 +10,7 @@ import { pushToast } from '@/lib/eggBus';
 import { sound } from '@/lib/sounds';
 import { haptics } from '@/lib/haptics';
 import { totalPuzzles, subscribeTotals } from '@/lib/progress';
-import { PHOTO_DB } from '@content/photos';
+import { PHOTO_PREVIEW } from '@content/photos';
 import { MediaFigure } from '@/components/media/MediaFigure';
 
 /* ---------- tiny hand-drawn icons for the room objects ---------- */
@@ -141,7 +141,7 @@ export default function HomeWorld() {
     return () => window.clearTimeout(t);
   }, [eggSeen]);
 
-  const polaroids = PHOTO_DB.slice(0, 3);
+  const polaroids = PHOTO_PREVIEW.slice(0, 3);
 
   return (
     <main className="safe-top min-h-dvh pb-32 safe-bottom">
@@ -230,7 +230,7 @@ export default function HomeWorld() {
                   className={`w-24 rounded-md bg-warm-white p-1.5 pb-2 shadow-soft transition-transform hover:-translate-y-1.5 sm:w-28 ${i === 1 ? 'rotate-2' : i === 2 ? '-rotate-3' : '-rotate-1'}`}
                 >
                   <div className="aspect-square overflow-hidden rounded-sm">
-                    <MediaFigure media={ph} className="h-full w-full object-cover" />
+                    <MediaFigure media={ph} variant="thumb" className="h-full w-full object-cover" />
                   </div>
                   <p className="mt-1 text-center font-hand text-xs text-ink-soft">{ph.caption}</p>
                 </Link>
