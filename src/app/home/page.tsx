@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NOTES } from '@content/site';
@@ -9,7 +9,7 @@ import { fireEgg } from '@/lib/easterEggEngine';
 import { pushToast } from '@/lib/eggBus';
 import { sound } from '@/lib/sounds';
 import { haptics } from '@/lib/haptics';
-import { totalPuzzles, subscribeTotals } from '@/games/framework/progress';
+import { totalPuzzles, subscribeTotals } from '@/lib/progress';
 import { PHOTO_DB } from '@content/photos';
 import { MediaFigure } from '@/components/media/MediaFigure';
 
@@ -80,9 +80,6 @@ function Icon({ name }: { name: string }) {
 
 const OBJECTS = [
   { id: 'us', label: 'a wall of us', icon: 'frame', href: '/us' },
-  { id: 'videos', label: 'the screen', icon: 'tv', href: '/videos' },
-  { id: 'letters', label: 'the desk', icon: 'letter', href: '/letters' },
-  { id: 'play', label: 'the games table', icon: 'play', href: '/play' },
   { id: 'doodle', label: 'the notebook', icon: 'doodle', href: '/doodle' },
   { id: 'little', label: 'little things', icon: 'jar', href: '/little-things' },
 ] as const;
@@ -97,14 +94,23 @@ export default function HomeWorld() {
 
   useEffect(() => subscribeTotals(() => setPuzzles(totalPuzzles())), []);
 
-  const hour = new Date().getHours();
-  const sky = useMemo(() => {
-    if (hour < 6) return 'linear-gradient(180deg,#1d1666,#3027a0 55%,#9b9be0)';
-    if (hour < 17) return 'linear-gradient(180deg,#9b9be0,#e6e9f4 60%,#f6c4d6)';
-    return 'linear-gradient(180deg,#3027a0,#1d1666 60%,#5650c2)';
-  }, [hour]);
+  // Time-of-day and the random note are client-only (server has no "now" or
+  // randomness to agree on), so they're picked post-mount to avoid a
+  // hydration mismatch — the SSR/first-paint value is a fixed daytime default.
+  const [sky, setSky] = useState('linear-gradient(180deg,#9b9be0,#e6e9f4 60%,#f6c4d6)');
+  const [note, setNote] = useState<(typeof NOTES)[number]>(NOTES[0]);
 
-  const note = useMemo(() => NOTES[Math.floor(Math.random() * NOTES.length)], []);
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setSky(
+      hour < 6
+        ? 'linear-gradient(180deg,#1d1666,#3027a0 55%,#9b9be0)'
+        : hour < 17
+          ? 'linear-gradient(180deg,#9b9be0,#e6e9f4 60%,#f6c4d6)'
+          : 'linear-gradient(180deg,#3027a0,#1d1666 60%,#5650c2)'
+    );
+    setNote(NOTES[Math.floor(Math.random() * NOTES.length)]);
+  }, []);
 
   const onMoonTap = () => {
     sound.tap();

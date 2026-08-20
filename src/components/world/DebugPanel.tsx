@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { makeProgressStore, resetTotals } from '@/games/framework/progress';
+import { resetTotals } from '@/lib/progress';
 import { resetEggs, loadEggState } from '@/lib/easterEggEngine';
 import { sound } from '@/lib/sounds';
 
@@ -45,9 +45,6 @@ export function DebugPanel() {
   if (process.env.NODE_ENV !== 'development') return null;
 
   const resetAll = () => {
-    makeProgressStore('liquid').reset();
-    makeProgressStore('untangle').reset();
-    makeProgressStore('arrows').reset();
     resetTotals();
     resetEggs();
     sound.pop();
@@ -68,9 +65,6 @@ export function DebugPanel() {
           <p className="mb-2 text-xs text-pink-cloud">{fps != null ? `${fps} fps` : 'measuring…'}</p>
 
           <div className="flex flex-col gap-1.5 text-sm">
-            <Link href="/play/liquid?debug=1" className="rounded-lg bg-white/10 px-3 py-2 hover:bg-white/20">jump → liquid love</Link>
-            <Link href="/play/untangle" className="rounded-lg bg-white/10 px-3 py-2 hover:bg-white/20">jump → untangle</Link>
-            <Link href="/play/arrows" className="rounded-lg bg-white/10 px-3 py-2 hover:bg-white/20">jump → arrow chain</Link>
             <Link href="/secret" className="rounded-lg bg-white/10 px-3 py-2 hover:bg-white/20">jump → secret room</Link>
             <button className="rounded-lg bg-white/10 px-3 py-2 text-left hover:bg-white/20" onClick={resetAll}>
               reset all progress + eggs

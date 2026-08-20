@@ -33,29 +33,6 @@ export interface Memory {
   pinned?: boolean;
 }
 
-export interface VideoItem {
-  id: string;
-  title: string;
-  file: string; // placeholder token or real path
-  thumb?: string;
-  duration?: string;
-  date?: string;
-  note?: string;
-  hidden?: boolean;
-}
-
-export interface Letter {
-  id: string;
-  heading: string; // "open when you miss me"
-  greeting?: string;
-  body: string;
-  signature?: string;
-  date?: string;
-  hidden?: boolean;
-  /** if present, only shown after this many total puzzles completed */
-  requiresProgress?: number;
-}
-
 export interface EasterEggDef {
   id: string;
   /** human / wearable message. may include "❤" which renders specially */

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { WorldShell } from '@/components/world/WorldShell';
 import { createStore, subscribe } from '@/lib/persistence';
-import { addDoodleSaved } from '@/games/framework/progress';
+import { addDoodleSaved } from '@/lib/progress';
 import { sound } from '@/lib/sounds';
 import { haptics } from '@/lib/haptics';
 import { pushToast } from '@/lib/eggBus';

@@ -19,8 +19,6 @@ export const NAV = [
   { href: "/home", label: "home", tag: "our room" },
   { href: "/us", label: "us", tag: "a wall of us" },
   { href: "/memories", label: "memories", tag: "remember this?" },
-  { href: "/play", label: "play", tag: "the little games table" },
-  { href: "/letters", label: "letters", tag: "open when…" },
   { href: "/doodle", label: "doodle", tag: "paper & pen" },
   { href: "/little-things", label: "little things", tag: "today's little thing" },
 ] as const;
