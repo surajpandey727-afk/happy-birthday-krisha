@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Outfit, Caveat, Unbounded, Space_Grotesk, Michroma, Fraunces } from 'next/font/google';
 import './globals.css';
 import { EggToast } from '@/components/ui/EggToast';
-import { Navigation } from '@/components/world/Navigation';
+import { SiteSidebar } from '@/components/world/SiteSidebar';
+import { ContentFrame } from '@/components/world/ContentFrame';
 import { PwaRegister } from '@/components/world/PwaRegister';
 import { DebugPanel } from '@/components/world/DebugPanel';
 
@@ -97,8 +98,8 @@ export default function RootLayout({
       className={`${display.variable} ${sans.variable} ${hand.variable} ${apestron.variable} ${magnode.variable} ${nebulica.variable} ${monigue.variable}`}
     >
       <body className="grain">
-        {children}
-        <Navigation />
+        <ContentFrame>{children}</ContentFrame>
+        <SiteSidebar />
         <EggToast />
         <PwaRegister />
         <DebugPanel />

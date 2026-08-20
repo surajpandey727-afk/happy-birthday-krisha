@@ -1,6 +1,7 @@
 'use client';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import ParticleText from '@/components/reactbits/ParticleText';
 
 /** Consistent editorial shell for the inner worlds. */
 export function WorldShell({
@@ -26,12 +27,24 @@ export function WorldShell({
           {kicker}
         </motion.p>
         <motion.h1
-          className="mt-2 font-apestron text-5xl leading-[0.95] tracking-tight text-parchment sm:text-6xl"
+          className="-ml-2 mt-1 h-16 sm:h-20"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-          {title}
+          <ParticleText
+            text={title}
+            color="#efe4d0"
+            highlightColor="#28479e"
+            fontFamily="var(--font-apestron)"
+            fontWeight={700}
+            fontSize="clamp(2.5rem, 8vw, 4rem)"
+            particleSize={2}
+            density={3}
+            glow={false}
+            idleDrift={0.4}
+            className="!min-h-0"
+          />
         </motion.h1>
         {blurb && (
           <motion.p
