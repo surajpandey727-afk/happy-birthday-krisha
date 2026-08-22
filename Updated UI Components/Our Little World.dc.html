@@ -10,8 +10,9 @@
 <helmet>
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=ranade@1,2&display=swap">
-<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","ogl":"https://unpkg.com/ogl@1.0.11/src/index.js"}}</script>
 <script type="module" src="./floating-lines.js"></script>
+<script type="module" src="./warp-text.js"></script>
 <script src="./drift-wall.js"></script>
 <style>
   html, body { margin:0; padding:0; background:#000; height:100%; }
@@ -161,7 +162,16 @@
 
           <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#6a6773">{{ greeting }}</p>
           <h1 style="margin:16px 0 0;font-size:clamp(2.4rem,5.6vw,4rem);font-weight:700;line-height:1;letter-spacing:-.04em;color:#f1eff6">our room</h1>
-          <p style="margin:18px 0 0;max-width:36ch;font-size:20px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">{{ note }}</p>
+          <div style="margin-top:18px;max-width:44ch">
+            <x-import component-from-global-scope="warp-text" text="{{ warpText }}" color="#c9c4d6" font-size="clamp(1.4rem, 3.4vw, 2.1rem)" font-weight="600" line-height="1.35" style="display:block;width:100%;height: {{ warpHeight }}"></x-import>
+            <sc-if value="{{ hasGloss }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
+                <sc-for list="{{ glossItems }}" as="g">
+                  <p style="margin:0;font-size:12.5px;font-weight:300;line-height:1.5;color:#5d5a66">{{ g.text }}</p>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
 
           <div style="margin-top:38px;padding-top:26px;border-top:1px solid rgba(255,255,255,.05);display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:26px">
             <div>
@@ -1056,9 +1066,7 @@ const MEMORIES = [
 ];
 
 const KEPT_NOTES = [
-  { id: 'n1', title: 'for the bad days', date: '12 aug', html: '<p>read this one when the day has been long and nothing has gone right. i wrote it on a good day, on purpose, so you would have it on a bad one.</p>' },
-  { id: 'n2', title: 'things you said in your sleep', date: '03 jul', html: '<p>an incomplete transcript. mostly nonsense. one of them was my name, which i am choosing to take personally.</p>' },
-  { id: 'n3', title: 'the list', date: '02 jun', html: '<p>every place we said we would go. no dates against any of them yet \u2014 ek din, hum wahi list jee lenge.</p>' }
+  { id: 'n1', title: 'Su plan chhe pachhi?', date: '02 jun', html: '<p>Bata Bata!?</p><p>Where to?</p>' }
 ];
 
 // one palette, shared by the pen and the brush. `color` is the swatch and the
@@ -1245,6 +1253,26 @@ const SPOTIFY_EMBED = 'https://open.spotify.com/embed/playlist/' + SPOTIFY_ID + 
 const STARS = ['i', '\u2764', 'k', 'r', 'i', 'p', 'i'];
 const ACCENT = ['#8d7ce8', '#5f9fae', '#a05fd6', '#8d7ce8', '#5f9fae'];
 
+// The home screen's rotating quote. Index 0 (the birthday line) is always
+// what shows first on a fresh load — see componentDidMount, which never
+// restores a persisted index. After that it advances through the rest on a
+// 10s interval, looping back to the birthday line once it reaches the end.
+const QUOTES = [
+  { lines: ['Janmdin Mubarakh', 'Jaaneman!'], gloss: [] },
+  { lines: ['Khalvat ho aur sharab ho, maashooq saamne;', 'Zaahid, tujhe qasam hai — jo tu ho to kya kare.'],
+    gloss: ['Khalvat — solitude or private seclusion.', 'Maashooq — beloved.', 'Zaahid — an ascetic or outwardly pious/religious person.'] },
+  { lines: ['Aankhon mein bas gaya hai nazaara tera,', 'Ab kis tarah bhula dein sahaara tera.'],
+    gloss: ['Nazaara — the sight or presence of someone.', 'Sahaara — support, refuge, or emotional anchor.'] },
+  { lines: ['Log kehte hain ke tum badal gaye ho,', 'Magar sach toh yeh hai ke hum sambhal gaye hain.'], gloss: [] },
+  { lines: ['Meri zindagi ka sarmaya bas teri hi mohabbat hai,', 'Tu mile toh Khuda mile, na mile toh qayaamat hai.'],
+    gloss: ['Sarmaya — life’s most valuable possession or wealth.', 'Qayaamat — Judgment Day; here, metaphorically, utter devastation.'] },
+  { lines: ['Main samundar bhi hoon, moti bhi hoon, ghota-zan bhi,', 'Koi bhi naam mera le ke bula le mujh ko.', 'Tu ne dekha nahin aaine se aage kuchh bhi,', 'Khud-parasti mein kahin tu na ganwa le mujh ko.'],
+    gloss: ['Ghota-zan — one who dives into the depths; metaphorically, someone who explores beneath the surface.', 'Khud-parasti — excessive self-love, self-obsession, or narcissism.', 'Ganwa dena — to lose or let something precious slip away.'] },
+  { lines: ['Mohabbat mein nahin hai farq jeene aur marne ka,', 'Usi ko dekh kar jeete hain jis kaafir pe dam nikle.'],
+    gloss: ['Kaafir — literally "non-believer"; in classical Urdu poetry, often an affectionate metaphor for a beloved whose beauty or indifference overwhelms the lover.'] },
+  { lines: ['Jag mein aa kar idhar udhar dekha,', 'Tu hi aaya nazar jidhar dekha.'], gloss: [] }
+];
+
 // Local persistence: keeps the notebook, media uploads, and case/door
 // progress across refreshes on THIS device (no shared backend yet \u2014 that's
 // a follow-up once Drive/Firebase are wired in). localStorage only, so
@@ -1266,6 +1294,7 @@ class Component extends DCLogic {
     screen: 'entrance',
     collapsed: false,
     note: NOTES[1],
+    quoteIndex: 0,
     moonTaps: 0,
     secretOpen: false,
     doorFound: false,
@@ -1357,6 +1386,10 @@ class Component extends DCLogic {
       }
     };
     window.addEventListener('keydown', this._keys);
+
+    this._quoteT = setInterval(() => {
+      this.setState(prev => ({ quoteIndex: (prev.quoteIndex + 1) % QUOTES.length }));
+    }, 10000);
   }
 
   // the ref fires once per mount, so stepping between videos syncs here
@@ -1380,6 +1413,7 @@ class Component extends DCLogic {
     if (this._t) clearTimeout(this._t);
     if (this._wordT) clearTimeout(this._wordT);
     if (this._persistT) clearTimeout(this._persistT);
+    if (this._quoteT) clearInterval(this._quoteT);
     if (this._keys) window.removeEventListener('keydown', this._keys);
     if (this._ccFit) window.removeEventListener('resize', this._ccFit);
     if (this._ccRaf) cancelAnimationFrame(this._ccRaf);
@@ -1884,6 +1918,7 @@ class Component extends DCLogic {
     const mostRecentNote = s.notes.reduce((best, n) => (
       !best || (n.updatedAt || 0) > (best.updatedAt || 0) ? n : best
     ), null);
+    const currentQuote = QUOTES[s.quoteIndex % QUOTES.length];
     const q = s.search.trim().toLowerCase();
     const visibleNotes = q
       ? s.notes.filter(n => ((n.title || '') + ' ' + plainText(n.html)).toLowerCase().indexOf(q) !== -1)
@@ -1971,6 +2006,10 @@ class Component extends DCLogic {
 
       // our room
       greeting: 'welcome back',
+      warpText: currentQuote.lines.join('\n'),
+      warpHeight: (currentQuote.lines.length * 46 + 20) + 'px',
+      hasGloss: currentQuote.gloss.length > 0,
+      glossItems: currentQuote.gloss.map(text => ({ text })),
       note: s.note,
       dateLabel: new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase(),
       // ── the passport rail ──
