@@ -195,6 +195,31 @@ function buildTextCanvas({ container, width, height, dpr, props }) {
   return canvas;
 }
 
+// Reads back a small grid of pixels from the just-rendered frame and checks
+// whether anything non-transparent actually landed on screen. Cheap (25
+// single-pixel reads) and only ever runs once per rasterize.
+function hasPaintedPixels(gl) {
+  try {
+    const w = gl.drawingBufferWidth;
+    const h = gl.drawingBufferHeight;
+    if (w <= 0 || h <= 0) return false;
+    const px = new Uint8Array(4);
+    for (let gy = 1; gy <= 5; gy++) {
+      for (let gx = 1; gx <= 5; gx++) {
+        const x = Math.min(w - 1, Math.floor((w * gx) / 6));
+        const y = Math.min(h - 1, Math.floor((h * gy) / 6));
+        gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+        if (px[3] > 8) return true;
+      }
+    }
+    return false;
+  } catch (_) {
+    // If readback itself isn't supported/allowed, don't block the reveal on
+    // it — fall back to trusting that render() succeeded.
+    return true;
+  }
+}
+
 function syncUniforms(program, props) {
   const uniforms = program.uniforms;
   uniforms.uWarpStrength.value = props.warpStrength;
@@ -211,22 +236,51 @@ class WarpText extends HTMLElement {
     return ['text', 'color'];
   }
 
+  // Reads an attribute trying every casing a host runtime might have
+  // normalized it to. This project's dc-runtime camelCases hyphenated
+  // x-import attrs (e.g. font-size -> fontSize) and then setAttribute()
+  // forces that to lowercase per the HTML spec, so "font-size" actually
+  // lands on the element as "fontsize" — check both forms plus the
+  // originally-authored one so this works either way.
+  // This project's runtime replaces <x-import> with its own host wrapper
+  // div around the actual custom element, so the intended "plain text right
+  // before this" sibling usually isn't a direct sibling of <warp-text> —
+  // it's a sibling of that wrapper. Walk up through zero-width/positioned
+  // wrapper ancestors until a real previous sibling turns up.
+  findFallbackSibling() {
+    let node = this;
+    for (let i = 0; i < 4 && node; i++) {
+      if (node.previousElementSibling) return node.previousElementSibling;
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  attr(name) {
+    const camel = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    const squished = name.replace(/-/g, '');
+    return this.getAttribute(name) ?? this.getAttribute(camel) ?? this.getAttribute(squished);
+  }
+
   readProps() {
-    const num = (a, d) => (this.hasAttribute(a) ? parseFloat(this.getAttribute(a)) : d);
+    const num = (a, d) => {
+      const v = this.attr(a);
+      return v != null && v !== '' ? parseFloat(v) : d;
+    };
     return {
-      text: this.getAttribute('text') ?? 'Bend the moment',
-      color: this.getAttribute('color') || '#f8f5ff',
+      text: this.attr('text') ?? 'Bend the moment',
+      color: this.attr('color') || '#f8f5ff',
       warpStrength: num('warp-strength', 0.08),
       warpScale: num('warp-scale', 1.7),
       speed: num('speed', 0.55),
       pointerInfluence: num('pointer-influence', 0.42),
       pointerStrength: num('pointer-strength', 0.38),
       refraction: num('refraction', 0.018),
-      ripple: this.getAttribute('ripple') !== 'false',
-      fontSize: this.getAttribute('font-size') || 'clamp(2rem, 5vw, 3.4rem)',
+      ripple: this.attr('ripple') !== 'false',
+      fontSize: this.attr('font-size') || 'clamp(2rem, 5vw, 3.4rem)',
       fontWeight: num('font-weight', 700),
-      fontFamily: this.getAttribute('font-family') || 'inherit',
-      letterSpacing: this.getAttribute('letter-spacing') || '-0.02em',
+      fontFamily: this.attr('font-family') || 'inherit',
+      letterSpacing: this.attr('letter-spacing') || '-0.02em',
       lineHeight: num('line-height', 1.25)
     };
   }
@@ -235,8 +289,17 @@ class WarpText extends HTMLElement {
     if (this._started) return;
     this._started = true;
 
+    // The host runtime applies the style="..." given on the <x-import> tag
+    // to a wrapper div it creates around this element, not to this element
+    // itself — so this can't rely on an inherited inset:0/100% from the
+    // template and must size itself to fill that wrapper unconditionally,
+    // or it collapses to a 0-height box (position:relative with only an
+    // absolutely-positioned canvas child contributes nothing to height).
     this.style.display = 'block';
-    this.style.position = this.style.position || 'relative';
+    this.style.position = 'absolute';
+    this.style.inset = '0';
+    this.style.width = '100%';
+    this.style.height = '100%';
 
     let disposed = false;
     let contextLost = false;
@@ -260,8 +323,10 @@ class WarpText extends HTMLElement {
       });
       gl = renderer.gl;
     } catch (error) {
-      console.warn('warp-text: WebGL could not be initialized.', error);
-      this.textContent = this.getAttribute('text') || '';
+      // No WebGL2 here — leave the plain-text sibling (rendered by the page
+      // itself, right before this element) as the only visible copy.
+      console.warn('warp-text: WebGL could not be initialized, falling back to plain text.', error);
+      this.style.display = 'none';
       return;
     }
 
@@ -328,6 +393,19 @@ class WarpText extends HTMLElement {
       texture.image = textCanvas;
       texture.needsUpdate = true;
       renderOnce();
+
+      // Only take over from the plain-text fallback once a frame has
+      // ACTUALLY painted something visible — sample a handful of points off
+      // the real framebuffer rather than trusting that render() not throwing
+      // means the text is on screen (a silent all-transparent frame, e.g.
+      // from a font/canvas edge case, would otherwise hide the real text
+      // behind nothing). If nothing painted, the fallback stays up and
+      // we'll simply try the check again on the next rasterize.
+      if (!this._revealed && hasPaintedPixels(gl)) {
+        this._revealed = true;
+        const fallback = this.findFallbackSibling();
+        if (fallback) fallback.style.visibility = 'hidden';
+      }
     };
 
     const resize = () => {
