@@ -1043,7 +1043,7 @@ const SNARK = [
 ];
 
 const MEMORIES = [
-  { id: 'm1', title: 'the very beginning', date: 'when it all started', location: 'somewhere that became home', mood: 'golden', photo: 'media/p01.jpg',
+  { id: 'm1', title: 'Jaccu Da', date: 'when it all started', location: 'somewhere that became home', mood: 'golden', photo: 'media/p01.jpg',
     description: "This is where it started, and mujhe pata bhi nahi chala kab. I just knew I didn't want the conversation to end." },
   { id: 'm2', title: 'the laugh', date: 'a random tuesday', location: 'you', mood: 'laughing', photo: 'media/p02.jpg',
     description: "That laugh. I'd build entire days just to hear it twice." },
@@ -1394,7 +1394,7 @@ class Component extends DCLogic {
     const html = this._editor.innerHTML;
     this.setState(prev => ({
       saved: 'saved',
-      notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { html }) : n))
+      notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { html, updatedAt: Date.now() }) : n))
     }));
   }
 
@@ -1773,7 +1773,7 @@ class Component extends DCLogic {
     const data = empty ? null : this._canvas.toDataURL('image/png');
     this.setState(prev => ({
       saved: 'saved',
-      notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { doodle: data }) : n))
+      notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { doodle: data, updatedAt: Date.now() }) : n))
     }));
   }
 
@@ -1877,6 +1877,13 @@ class Component extends DCLogic {
     const media = MEDIA.concat(s.uploads);
     const activeNote = s.notes.find(n => n.id === s.activeNote) || s.notes[0] || null;
     const words = countWords(activeNote ? activeNote.html : '');
+    // "last kept" on the home screen — the note with the newest updatedAt
+    // stamp (set on every real save: body edit, doodle, or title change).
+    // Notes that have never been touched this session (the seeded
+    // KEPT_NOTES) have no updatedAt, so they fall back to array order.
+    const mostRecentNote = s.notes.reduce((best, n) => (
+      !best || (n.updatedAt || 0) > (best.updatedAt || 0) ? n : best
+    ), null);
     const q = s.search.trim().toLowerCase();
     const visibleNotes = q
       ? s.notes.filter(n => ((n.title || '') + ' ' + plainText(n.html)).toLowerCase().indexOf(q) !== -1)
@@ -2000,7 +2007,7 @@ class Component extends DCLogic {
           }))
         };
       }),
-      lastKept: 'for the bad days',
+      lastKept: mostRecentNote ? (mostRecentNote.title || 'untitled') : 'nothing kept yet',
       moonLine: s.secretOpen
         ? 'you were right to be curious. it opened.'
         : 'it sits in the corner of this room doing nothing in particular. probably.',
@@ -2259,7 +2266,7 @@ class Component extends DCLogic {
         const v = e.target.value;
         this.setState(prev => ({
           saved: 'saving',
-          notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { title: v }) : n))
+          notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { title: v, updatedAt: Date.now() }) : n))
         }));
       },
       newNote: () => this.newNote(),
