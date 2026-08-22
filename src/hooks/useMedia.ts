@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 
 export function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
@@ -45,6 +45,25 @@ export function useBreakpoint(): 'mobile' | 'tablet' | 'desktop' {
     return () => window.removeEventListener('resize', update);
   }, []);
   return bp;
+}
+
+/** Tracks an element's actual measured width via ResizeObserver — for
+ * layout that must react to more than viewport breakpoint buckets, e.g. a
+ * container whose width also changes when a sibling sidebar collapses. */
+export function useElementWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
+  const ref = useRef<T | null>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    ro.observe(el);
+    setWidth(el.getBoundingClientRect().width);
+    return () => ro.disconnect();
+  }, []);
+
+  return [ref, width];
 }
 
 export function useIsTouch(): boolean {

@@ -4,6 +4,8 @@ import './globals.css';
 import { EggToast } from '@/components/ui/EggToast';
 import { SiteSidebar } from '@/components/world/SiteSidebar';
 import { ContentFrame } from '@/components/world/ContentFrame';
+import { SidebarProvider } from '@/components/world/SidebarContext';
+import { AuroraBackground } from '@/components/world/AuroraBackground';
 import { PwaRegister } from '@/components/world/PwaRegister';
 import { DebugPanel } from '@/components/world/DebugPanel';
 import { FloatingSpotifyPlayer } from '@/components/spotify/FloatingSpotifyPlayer';
@@ -46,7 +48,7 @@ const monigue = Fraunces({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://olw.local'),
-  title: 'i❤kripi — our little world',
+  title: 'i❤kripi: our little world',
   description: 'a little place that belongs only to us.',
   applicationName: 'i❤kripi',
   manifest: '/manifest.webmanifest',
@@ -60,7 +62,7 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
   },
   openGraph: {
-    title: 'i❤kripi — our little world',
+    title: 'i❤kripi: our little world',
     description: 'a little place that belongs only to us.',
     images: ['/og.png'],
     type: 'website',
@@ -86,8 +88,11 @@ export default function RootLayout({
       className={`${sans.variable} ${apestron.variable} ${magnode.variable} ${nebulica.variable} ${monigue.variable}`}
     >
       <body className="grain">
-        <ContentFrame>{children}</ContentFrame>
-        <SiteSidebar />
+        <AuroraBackground />
+        <SidebarProvider>
+          <ContentFrame>{children}</ContentFrame>
+          <SiteSidebar />
+        </SidebarProvider>
         <FloatingSpotifyPlayer />
         <EggToast />
         <PwaRegister />

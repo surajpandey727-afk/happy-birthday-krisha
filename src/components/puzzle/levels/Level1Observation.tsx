@@ -47,7 +47,8 @@ export function Level1Observation({ onComplete }: { onComplete: () => void }) {
   return (
     <div>
       <p className="font-monigue max-w-md text-sm italic text-muted">
-        A room tells you more than it says. Look at everything — most of it is just furniture.
+        The greatest clue is often the thing one sees every day and never truly sees. Look at everything. Most of
+        it is just furniture.
       </p>
 
       <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -76,7 +77,7 @@ export function Level1Observation({ onComplete }: { onComplete: () => void }) {
         <PuzzleHint
           level={1}
           hints={[
-            'Two objects in this room don’t belong to the moment — one has stopped, one only shows you what’s already there.',
+            'Two objects in this room don’t belong to the moment: one has stopped, one only shows you what’s already there.',
             'The clock, and the mirror.',
           ]}
         />

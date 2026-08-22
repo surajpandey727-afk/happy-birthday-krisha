@@ -1,49 +1,51 @@
 'use client';
-import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { WorldShell } from '@/components/world/WorldShell';
-import { PHOTO_DB, PHOTO_PREVIEW } from '@content/photos';
-import { MediaFigure } from '@/components/media/MediaFigure';
+import { PHOTO_DB } from '@content/photos';
 import { PhotoViewer } from '@/components/media/PhotoViewer';
+import { PhotoUploader } from '@/components/media/PhotoUploader';
 import DriftWall, { type DriftWallItem } from '@/components/reactbits/DriftWall';
 import { sound } from '@/lib/sounds';
-import { NOTES } from '@content/site';
-import { useBreakpoint, usePrefersReducedMotion } from '@/hooks/useMedia';
+import { useElementWidth, useBreakpoint, usePrefersReducedMotion } from '@/hooks/useMedia';
 
-/** A wall of us — the Drift Wall preview, expanding into the full archive. */
+const PREVIEW_COUNT = 30;
+
+/** A wall of us — one continuous drifting archive, not a preview section
+ * sitting above a differently-styled "full archive" grid. "see all" doesn't
+ * swap to another component; it expands this same wall — more height, the
+ * complete photo pool instead of the 30-photo preview — a folder unfolding
+ * to show what's already inside it, not a new folder appearing. */
 export default function UsPage() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const breakpoint = useBreakpoint();
   const reduced = usePrefersReducedMotion();
+  const [wallRef, wallWidth] = useElementWidth<HTMLDivElement>();
+
+  const pool = expanded ? PHOTO_DB : PHOTO_DB.slice(0, PREVIEW_COUNT);
 
   const wallItems: DriftWallItem[] = useMemo(
     () =>
-      PHOTO_PREVIEW.map((ph) => ({
+      pool.map((ph) => ({
         image: ph.thumb ?? ph.src,
         alt: ph.alt,
         title: ph.caption,
       })),
-    []
+    [pool]
   );
 
-  const wallProps =
-    breakpoint === 'mobile'
-      ? { columns: 3, tileWidth: 112, tileHeight: 148, gap: 10 }
-      : breakpoint === 'tablet'
-        ? { columns: 4, tileWidth: 160, tileHeight: 200, gap: 14 }
-        : { columns: 5, tileWidth: 200, tileHeight: 250, gap: 18 };
-
-  const wallHeight = breakpoint === 'mobile' ? 560 : breakpoint === 'tablet' ? 660 : 820;
-
-  const polaroids = useMemo(
-    () =>
-      PHOTO_DB.map((ph, i) => ({
-        ph,
-        rotate: [1.5, -2, 2.5, -1, 2, -2.5][i % 6],
-      })),
-    []
-  );
+  // Real container width (tracked live via ResizeObserver — reacts to
+  // window resizing AND the sidebar sliding in/out) drives column count, so
+  // the wall actually grows to fill the freed space instead of staying a
+  // fixed composition centered in a wider, mostly-empty box.
+  const gap = breakpoint === 'mobile' ? 10 : breakpoint === 'tablet' ? 14 : 18;
+  const targetTile = breakpoint === 'mobile' ? 110 : breakpoint === 'tablet' ? 150 : 190;
+  const columns = wallWidth > 0 ? Math.min(9, Math.max(3, Math.round(wallWidth / (targetTile + gap)))) : 5;
+  const tileWidth = wallWidth > 0 ? Math.round(wallWidth / columns - gap) : targetTile;
+  const tileHeight = Math.round(tileWidth * 1.25);
+  const compactHeight = breakpoint === 'mobile' ? 620 : breakpoint === 'tablet' ? 760 : 900;
+  const expandedHeight = breakpoint === 'mobile' ? 1600 : breakpoint === 'tablet' ? 2000 : 2400;
+  const wallHeight = expanded ? expandedHeight : compactHeight;
 
   const openWallPhoto = (item: DriftWallItem) => {
     const idx = PHOTO_DB.findIndex((p) => p.src === item.image || p.thumb === item.image);
@@ -51,78 +53,56 @@ export default function UsPage() {
     setOpenIdx(idx >= 0 ? idx : 0);
   };
 
+  const wallStyle: CSSProperties = {
+    height: wallHeight,
+    transitionProperty: 'height',
+    transitionDuration: reduced ? '0ms' : '700ms',
+    transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+  };
+
   return (
-    <WorldShell kicker="a wall of us" title="us" blurb="a little archive, always drifting.">
-      <section aria-label="drift wall — a preview of the archive">
-        <div
-          style={{ height: wallHeight }}
-          className="overflow-hidden rounded-3xl ring-1 ring-royal/40"
-        >
-          <DriftWall
-            items={wallItems}
-            onSelect={openWallPhoto}
-            overlayColor="#08090d"
-            dim={0.5}
-            fade={0.55}
-            speed={reduced ? 0 : 34}
-            grayscale={false}
-            {...wallProps}
-          />
-        </div>
-        <div className="mt-4 flex items-center justify-between gap-4">
-          <p className="font-monigue text-sm italic text-muted">move through the archive.</p>
-          <button
-            onClick={() => {
-              sound.tap();
-              setShowAll((v) => !v);
-            }}
-            className="font-nebulica shrink-0 rounded-full border border-royal-vivid/50 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-royal-vivid transition-colors hover:bg-royal-vivid/10"
-          >
-            {showAll ? 'close archive' : 'see all'}
-          </button>
-        </div>
-      </section>
-
-      <AnimatePresence>
-        {showAll && (
-          <motion.section
-            aria-label="the full archive"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <div className="mt-10 columns-2 gap-4 sm:columns-3 [column-fill:balance]">
-              {polaroids.map(({ ph, rotate }, i) => (
-                <motion.button
-                  key={ph.src}
-                  onClick={() => {
-                    sound.tap();
-                    setOpenIdx(i);
-                  }}
-                  className="mb-4 block w-full break-inside-avoid rounded-md border border-brown-warm/40 bg-surface-alt p-2 pb-3 text-left shadow-[0_14px_30px_-16px_rgba(0,0,0,0.75)] transition-transform hover:-translate-y-1.5"
-                  style={{ rotate: `${rotate}deg` }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: (i % 6) * 0.05 }}
-                >
-                  <div className="overflow-hidden rounded-sm">
-                    <MediaFigure media={ph} variant="thumb" className="aspect-[4/5] w-full object-cover" />
-                  </div>
-                  {ph.caption && <p className="font-monigue mt-1.5 px-1 text-sm italic text-muted-dim">{ph.caption}</p>}
-                </motion.button>
-              ))}
+    <WorldShell
+      kicker="a wall of us"
+      title="us"
+      blurb="every version of us I didn't want to lose."
+      headline="kicker"
+      fullBleed={
+        <section aria-label="a wall of us" className="px-5 sm:px-8">
+          <div ref={wallRef} style={wallStyle} className="overflow-hidden rounded-3xl ring-1 ring-royal/40">
+            {wallWidth > 0 && (
+              <DriftWall
+                items={wallItems}
+                onSelect={openWallPhoto}
+                overlayColor="#08090d"
+                dim={0.5}
+                fade={0.55}
+                speed={reduced ? 0 : 34}
+                grayscale={false}
+                columns={columns}
+                tileWidth={tileWidth}
+                tileHeight={tileHeight}
+                gap={gap}
+              />
+            )}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="font-monigue text-sm italic text-muted">nothing here is in order. wander.</p>
+            <div className="flex shrink-0 gap-2">
+              <PhotoUploader onUploaded={() => window.location.reload()} />
+              <button
+                onClick={() => {
+                  sound.tap();
+                  setExpanded((v) => !v);
+                }}
+                className="font-nebulica rounded-full border border-royal-vivid/50 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-royal-vivid transition-colors hover:bg-royal-vivid/10"
+              >
+                {expanded ? 'close the wall' : 'see all'}
+              </button>
             </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
-
-      <p className="font-monigue mt-6 text-center text-lg italic text-muted">
-        {NOTES[3].text}
-      </p>
-
+          </div>
+        </section>
+      }
+    >
       {openIdx != null && (
         <PhotoViewer
           photos={PHOTO_DB}

@@ -10,7 +10,7 @@ export type { EasterEggDef };
 export const EASTER_EGGS: EasterEggDef[] = [
   {
     id: "egg-home-hidden",
-    message: "you found it — i❤kripi",
+    message: "you found it. i❤kripi",
     trigger: { type: "taps", taps: 7, probability: 1 },
     cooldown: 60_000 * 8,
   },

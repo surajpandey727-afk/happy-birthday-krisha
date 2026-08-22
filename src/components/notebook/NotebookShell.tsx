@@ -47,6 +47,7 @@ export function NotebookShell() {
   const [mode, setMode] = useState<'write' | 'draw'>('write');
   const [mobileView, setMobileView] = useState<MobileView>('list');
   const [loaded, setLoaded] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
 
   const doodleRef = useRef<DoodleCanvasHandle>(null);
   const saveTimer = useRef<number | null>(null);
@@ -140,9 +141,13 @@ export function NotebookShell() {
     download(`${note.title || 'untitled'}.html`, html, 'text/html');
   }, []);
 
-  // keyboard shortcuts: Cmd/Ctrl+S flush save, Cmd/Ctrl+N new note
+  // keyboard shortcuts: Cmd/Ctrl+S flush save, Cmd/Ctrl+N new note, Esc exits fullscreen
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && fullscreen) {
+        setFullscreen(false);
+        return;
+      }
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
       if (e.key === 's') {
@@ -158,7 +163,19 @@ export function NotebookShell() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [active, createNote]);
+  }, [active, createNote, fullscreen]);
+
+  // lock page scroll while the fullscreen editor overlay is open
+  useEffect(() => {
+    if (!fullscreen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [fullscreen]);
+
+  useEffect(() => setFullscreen(false), [activeId]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -176,9 +193,9 @@ export function NotebookShell() {
   if (!loaded) return null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[240px_1fr_200px]">
+    <div className="grid gap-5 lg:grid-cols-[260px_1fr_220px]">
       {/* index */}
-      <div className={`${mobileView === 'editor' ? 'hidden lg:block' : ''}`}>
+      <div aria-hidden={fullscreen} className={`${mobileView === 'editor' ? 'hidden lg:block' : ''}`}>
         <div className="mb-3 flex items-center gap-2">
           <input
             value={search}
@@ -230,68 +247,108 @@ export function NotebookShell() {
         </div>
       </div>
 
-      {/* page */}
-      <div className={`${mobileView === 'list' ? 'hidden lg:block' : ''}`}>
-        {!active ? (
-          <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-brown-warm/40 text-center">
-            <p className="font-monigue text-sm italic text-muted">the first page is still blank.</p>
-            <button onClick={createNote} className="font-nebulica text-[10px] uppercase tracking-[0.3em] text-royal-vivid underline underline-offset-4">
-              start writing
-            </button>
-          </div>
-        ) : (
-          <div>
-            <button onClick={() => setMobileView('list')} className="font-nebulica mb-3 text-[10px] uppercase tracking-[0.3em] text-muted-dim lg:hidden">
-              ← index
-            </button>
-
-            <input
-              value={active.title}
-              onChange={(e) => updateActive({ title: e.target.value })}
-              placeholder="untitled"
-              className="font-apestron w-full bg-transparent text-2xl text-parchment placeholder:text-muted-dim outline-none sm:text-3xl"
-            />
-
-            <div className="mt-3 flex items-center gap-2">
-              <div className="flex overflow-hidden rounded-full bg-brown-deep/40 ring-1 ring-brown-warm/40">
-                <button
-                  onClick={() => setMode('write')}
-                  className={`font-nebulica px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] ${mode === 'write' ? 'bg-royal-vivid text-void' : 'text-muted'}`}
-                >
-                  write
+      {/* page — the editor/canvas instances below stay mounted across the
+          fullscreen toggle (only the wrapper's classes change); remounting
+          them at a different tree position would wipe the doodle canvas and
+          drop the RichTextEditor's cursor. */}
+      <div
+        className={
+          fullscreen
+            ? 'fixed inset-0 z-[100] overflow-y-auto bg-void/97 px-5 py-6 backdrop-blur-md sm:px-10 sm:py-10'
+            : mobileView === 'list'
+              ? 'hidden lg:block'
+              : ''
+        }
+      >
+        <div className={fullscreen ? 'mx-auto max-w-5xl' : ''}>
+          {!active ? (
+            <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-brown-warm/40 text-center">
+              <p className="font-monigue text-sm italic text-muted">the first page is still blank.</p>
+              <button onClick={createNote} className="font-nebulica text-[10px] uppercase tracking-[0.3em] text-royal-vivid underline underline-offset-4">
+                start writing
+              </button>
+            </div>
+          ) : (
+            <div>
+              {!fullscreen && (
+                <button onClick={() => setMobileView('list')} className="font-nebulica mb-3 text-[10px] uppercase tracking-[0.3em] text-muted-dim lg:hidden">
+                  ← index
                 </button>
+              )}
+
+              <div className="flex items-start justify-between gap-3">
+                <input
+                  value={active.title}
+                  onChange={(e) => updateActive({ title: e.target.value })}
+                  placeholder="untitled"
+                  className="font-apestron w-full bg-transparent text-2xl text-parchment placeholder:text-muted-dim outline-none sm:text-3xl"
+                />
                 <button
-                  onClick={() => setMode('draw')}
-                  className={`font-nebulica px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] ${mode === 'draw' ? 'bg-royal-vivid text-void' : 'text-muted'}`}
+                  onClick={() => {
+                    sound.tap();
+                    setFullscreen((v) => !v);
+                  }}
+                  aria-label={fullscreen ? 'exit fullscreen' : 'expand to fullscreen'}
+                  title={fullscreen ? 'exit fullscreen (esc)' : 'expand to fullscreen'}
+                  className="tap-target shrink-0 rounded-full text-base text-muted-dim transition-colors hover:bg-royal-vivid/15 hover:text-royal-vivid"
                 >
-                  draw
+                  {fullscreen ? '✕' : '⛶'}
                 </button>
               </div>
-              <span className="font-monigue text-xs italic text-muted-dim">{statusLabel}</span>
-            </div>
 
-            <div className="mt-4">
-              {mode === 'write' ? (
-                <RichTextEditor html={active.contentHtml} onChange={(html) => updateActive({ contentHtml: html })} />
-              ) : (
-                <div>
-                  <DoodleCanvas ref={doodleRef} />
+              <div className="mt-3 flex items-center gap-2">
+                <div className="flex overflow-hidden rounded-full bg-brown-deep/40 ring-1 ring-brown-warm/40">
                   <button
-                    onClick={insertDoodle}
-                    className="mt-3 w-full rounded-2xl bg-royal-vivid/20 py-2.5 font-nebulica text-[10px] uppercase tracking-[0.3em] text-royal-vivid hover:bg-royal-vivid/30"
+                    onClick={() => setMode('write')}
+                    className={`font-nebulica px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] ${mode === 'write' ? 'bg-royal-vivid text-void' : 'text-muted'}`}
                   >
-                    insert into page
+                    write
+                  </button>
+                  <button
+                    onClick={() => setMode('draw')}
+                    className={`font-nebulica px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] ${mode === 'draw' ? 'bg-royal-vivid text-void' : 'text-muted'}`}
+                  >
+                    draw
                   </button>
                 </div>
-              )}
+                <span className="font-monigue text-xs italic text-muted-dim">{statusLabel}</span>
+                {fullscreen && (
+                  <span className="font-nebulica ml-auto hidden text-[9px] uppercase tracking-[0.25em] text-muted-dim sm:inline">
+                    esc to exit
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-4">
+                {mode === 'write' ? (
+                  <RichTextEditor
+                    html={active.contentHtml}
+                    onChange={(html) => updateActive({ contentHtml: html })}
+                    minHeightClass={fullscreen ? 'min-h-[calc(100dvh-260px)]' : 'min-h-[48vh]'}
+                  />
+                ) : (
+                  <div>
+                    <DoodleCanvas ref={doodleRef} heightClass={fullscreen ? 'h-[calc(100dvh-280px)]' : 'h-[52dvh]'} />
+                    <button
+                      onClick={insertDoodle}
+                      className="mt-3 w-full rounded-2xl bg-royal-vivid/20 py-2.5 font-nebulica text-[10px] uppercase tracking-[0.3em] text-royal-vivid hover:bg-royal-vivid/30"
+                    >
+                      insert into page
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* tools */}
       {active && (
-        <div className={`${mobileView === 'list' ? 'hidden lg:block' : ''} flex flex-col gap-3`}>
+        <div
+          aria-hidden={fullscreen}
+          className={`${mobileView === 'list' ? 'hidden lg:block' : ''} flex flex-col gap-3`}
+        >
           <p className="font-monigue text-xs italic text-muted-dim">
             edited {new Date(active.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
           </p>

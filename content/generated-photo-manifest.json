@@ -5,6 +5,7 @@
     "thumb": "/media/photos/thumb/photo-001.webp",
     "w": 1200,
     "h": 1600,
+    "date": "2025-08-12T06:00:00.000Z",
     "sourceFilename": "IMG-20250812-WA0007.jpg"
   },
   {
@@ -13,6 +14,7 @@
     "thumb": "/media/photos/thumb/photo-002.webp",
     "w": 1200,
     "h": 1600,
+    "date": "2025-08-12T08:00:00.000Z",
     "sourceFilename": "IMG-20250812-WA0009.jpg"
   },
   {
@@ -21,6 +23,7 @@
     "thumb": "/media/photos/thumb/photo-003.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-06-02T16:00:22.000Z",
     "sourceFilename": "IMG_20250602_170022165.jpg"
   },
   {
@@ -29,6 +32,7 @@
     "thumb": "/media/photos/thumb/photo-004.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-06-02T17:42:05.000Z",
     "sourceFilename": "IMG_20250602_184205447.jpg"
   },
   {
@@ -37,6 +41,7 @@
     "thumb": "/media/photos/thumb/photo-005.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-06-03T16:59:58.000Z",
     "sourceFilename": "IMG_20250603_175958108.jpg"
   },
   {
@@ -45,6 +50,7 @@
     "thumb": "/media/photos/thumb/photo-006.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-07-03T17:59:16.000Z",
     "sourceFilename": "IMG_20250703_185916408.jpg"
   },
   {
@@ -53,6 +59,7 @@
     "thumb": "/media/photos/thumb/photo-007.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-07-03T18:01:03.000Z",
     "sourceFilename": "IMG_20250703_190103583.jpg"
   },
   {
@@ -61,6 +68,7 @@
     "thumb": "/media/photos/thumb/photo-008.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-07-03T18:11:41.000Z",
     "sourceFilename": "IMG_20250703_191141595.jpg"
   },
   {
@@ -69,6 +77,7 @@
     "thumb": "/media/photos/thumb/photo-009.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-07-05T17:31:18.000Z",
     "sourceFilename": "IMG_20250705_183119033.jpg"
   },
   {
@@ -77,6 +86,7 @@
     "thumb": "/media/photos/thumb/photo-010.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-07-10T20:18:35.000Z",
     "sourceFilename": "IMG_20250710_211835848.jpg"
   },
   {
@@ -85,6 +95,7 @@
     "thumb": "/media/photos/thumb/photo-011.webp",
     "w": 4096,
     "h": 2304,
+    "date": "2025-07-10T22:07:37.000Z",
     "sourceFilename": "IMG_20250710_230737275.jpg"
   },
   {
@@ -93,6 +104,7 @@
     "thumb": "/media/photos/thumb/photo-012.webp",
     "w": 2560,
     "h": 4608,
+    "date": "2025-08-02T13:54:10.000Z",
     "sourceFilename": "IMG_20250802_145411524.jpg"
   },
   {
@@ -101,6 +113,7 @@
     "thumb": "/media/photos/thumb/photo-013.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-22T17:56:02.000Z",
     "sourceFilename": "IMG_20250822_185602274.jpg"
   },
   {
@@ -109,6 +122,7 @@
     "thumb": "/media/photos/thumb/photo-014.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-22T19:05:18.000Z",
     "sourceFilename": "IMG_20250822_200518235.jpg"
   },
   {
@@ -117,6 +131,7 @@
     "thumb": "/media/photos/thumb/photo-015.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-23T06:16:36.000Z",
     "sourceFilename": "IMG_20250823_071636536.jpg"
   },
   {
@@ -125,6 +140,7 @@
     "thumb": "/media/photos/thumb/photo-016.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-23T06:54:18.000Z",
     "sourceFilename": "IMG_20250823_075418944.jpg"
   },
   {
@@ -133,6 +149,7 @@
     "thumb": "/media/photos/thumb/photo-017.webp",
     "w": 4608,
     "h": 2560,
+    "date": "2025-08-23T21:37:40.000Z",
     "sourceFilename": "IMG_20250823_223740427.jpg"
   },
   {
@@ -141,6 +158,7 @@
     "thumb": "/media/photos/thumb/photo-018.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-23T22:23:25.000Z",
     "sourceFilename": "IMG_20250823_232325520.jpg"
   },
   {
@@ -149,6 +167,7 @@
     "thumb": "/media/photos/thumb/photo-019.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-30T20:37:36.000Z",
     "sourceFilename": "IMG_20250830_213737053.jpg"
   },
   {
@@ -157,6 +176,7 @@
     "thumb": "/media/photos/thumb/photo-020.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-30T20:37:46.000Z",
     "sourceFilename": "IMG_20250830_213747282.jpg"
   },
   {
@@ -165,6 +185,7 @@
     "thumb": "/media/photos/thumb/photo-021.webp",
     "w": 2304,
     "h": 4096,
+    "date": "2025-08-31T20:47:16.000Z",
     "sourceFilename": "IMG_20250831_214718555.jpg"
   },
   {
@@ -173,6 +194,7 @@
     "thumb": "/media/photos/thumb/photo-022.webp",
     "w": 1845,
     "h": 3260,
+    "date": "2025-07-13T12:51:08.000Z",
     "sourceFilename": "Snapchat-121545764.jpg"
   },
   {
@@ -181,6 +203,7 @@
     "thumb": "/media/photos/thumb/photo-023.webp",
     "w": 1080,
     "h": 1920,
+    "date": "2025-09-16T21:25:35.000Z",
     "sourceFilename": "Snapchat-1275956892.jpg"
   },
   {
@@ -189,6 +212,7 @@
     "thumb": "/media/photos/thumb/photo-024.webp",
     "w": 1845,
     "h": 3260,
+    "date": "2025-08-17T22:17:58.000Z",
     "sourceFilename": "Snapchat-1290862427.jpg"
   },
   {
@@ -197,6 +221,7 @@
     "thumb": "/media/photos/thumb/photo-025.webp",
     "w": 1080,
     "h": 1920,
+    "date": "2025-09-16T21:25:49.000Z",
     "sourceFilename": "Snapchat-1456189688.jpg"
   },
   {
@@ -205,6 +230,7 @@
     "thumb": "/media/photos/thumb/photo-026.webp",
     "w": 1440,
     "h": 2560,
+    "date": "2025-08-08T19:42:16.000Z",
     "sourceFilename": "Snapchat-445251900.jpg"
   },
   {
@@ -213,6 +239,7 @@
     "thumb": "/media/photos/thumb/photo-027.webp",
     "w": 1080,
     "h": 1920,
+    "date": "2025-09-01T12:10:49.000Z",
     "sourceFilename": "Snapchat-612879250.jpg"
   },
   {
@@ -221,6 +248,7 @@
     "thumb": "/media/photos/thumb/photo-028.webp",
     "w": 1845,
     "h": 3260,
+    "date": "2025-07-13T12:50:10.000Z",
     "sourceFilename": "Snapchat-686110456.jpg"
   },
   {
@@ -229,6 +257,7 @@
     "thumb": "/media/photos/thumb/photo-029.webp",
     "w": 1845,
     "h": 3280,
+    "date": "2025-08-22T12:12:54.000Z",
     "sourceFilename": "Snapchat-744034226.jpg"
   },
   {
@@ -237,6 +266,7 @@
     "thumb": "/media/photos/thumb/photo-030.webp",
     "w": 1080,
     "h": 1920,
+    "date": "2025-06-18T14:42:17.000Z",
     "sourceFilename": "Snapchat-843998485.jpg"
   },
   {
@@ -245,6 +275,7 @@
     "thumb": "/media/photos/thumb/photo-031.webp",
     "w": 1743,
     "h": 2325,
+    "date": null,
     "sourceFilename": "shared image (10).jpg"
   },
   {
@@ -253,6 +284,7 @@
     "thumb": "/media/photos/thumb/photo-032.webp",
     "w": 1280,
     "h": 850,
+    "date": null,
     "sourceFilename": "shared image (11).jpg"
   },
   {
@@ -261,6 +293,7 @@
     "thumb": "/media/photos/thumb/photo-033.webp",
     "w": 2048,
     "h": 1536,
+    "date": null,
     "sourceFilename": "shared image (12).jpg"
   },
   {
@@ -269,6 +302,7 @@
     "thumb": "/media/photos/thumb/photo-034.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (13).jpg"
   },
   {
@@ -277,6 +311,7 @@
     "thumb": "/media/photos/thumb/photo-035.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (14).jpg"
   },
   {
@@ -285,6 +320,7 @@
     "thumb": "/media/photos/thumb/photo-036.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (15).jpg"
   },
   {
@@ -293,6 +329,7 @@
     "thumb": "/media/photos/thumb/photo-037.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (16).jpg"
   },
   {
@@ -301,6 +338,7 @@
     "thumb": "/media/photos/thumb/photo-038.webp",
     "w": 1600,
     "h": 1200,
+    "date": null,
     "sourceFilename": "shared image (17).jpg"
   },
   {
@@ -309,6 +347,7 @@
     "thumb": "/media/photos/thumb/photo-039.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (18).jpg"
   },
   {
@@ -317,6 +356,7 @@
     "thumb": "/media/photos/thumb/photo-040.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (19).jpg"
   },
   {
@@ -325,6 +365,7 @@
     "thumb": "/media/photos/thumb/photo-041.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (2).jpg"
   },
   {
@@ -333,6 +374,7 @@
     "thumb": "/media/photos/thumb/photo-042.webp",
     "w": 1200,
     "h": 1600,
+    "date": null,
     "sourceFilename": "shared image (20).jpg"
   },
   {
@@ -341,6 +383,7 @@
     "thumb": "/media/photos/thumb/photo-043.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (21).jpg"
   },
   {
@@ -349,6 +392,7 @@
     "thumb": "/media/photos/thumb/photo-044.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (22).jpg"
   },
   {
@@ -357,6 +401,7 @@
     "thumb": "/media/photos/thumb/photo-045.webp",
     "w": 960,
     "h": 1280,
+    "date": null,
     "sourceFilename": "shared image (23).jpg"
   },
   {
@@ -365,6 +410,7 @@
     "thumb": "/media/photos/thumb/photo-046.webp",
     "w": 1200,
     "h": 1600,
+    "date": null,
     "sourceFilename": "shared image (24).jpg"
   },
   {
@@ -373,6 +419,7 @@
     "thumb": "/media/photos/thumb/photo-047.webp",
     "w": 2560,
     "h": 1920,
+    "date": null,
     "sourceFilename": "shared image (25).jpg"
   },
   {
@@ -381,6 +428,7 @@
     "thumb": "/media/photos/thumb/photo-048.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (26).jpg"
   },
   {
@@ -389,6 +437,7 @@
     "thumb": "/media/photos/thumb/photo-049.webp",
     "w": 1200,
     "h": 1600,
+    "date": null,
     "sourceFilename": "shared image (27).jpg"
   },
   {
@@ -397,6 +446,7 @@
     "thumb": "/media/photos/thumb/photo-050.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (28).jpg"
   },
   {
@@ -405,6 +455,7 @@
     "thumb": "/media/photos/thumb/photo-051.webp",
     "w": 1200,
     "h": 1600,
+    "date": null,
     "sourceFilename": "shared image (29).jpg"
   },
   {
@@ -413,6 +464,7 @@
     "thumb": "/media/photos/thumb/photo-052.webp",
     "w": 1360,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (3).jpg"
   },
   {
@@ -421,6 +473,7 @@
     "thumb": "/media/photos/thumb/photo-053.webp",
     "w": 2016,
     "h": 1512,
+    "date": null,
     "sourceFilename": "shared image (30).jpg"
   },
   {
@@ -429,6 +482,7 @@
     "thumb": "/media/photos/thumb/photo-054.webp",
     "w": 1200,
     "h": 1600,
+    "date": null,
     "sourceFilename": "shared image (31).jpg"
   },
   {
@@ -437,6 +491,7 @@
     "thumb": "/media/photos/thumb/photo-055.webp",
     "w": 850,
     "h": 1280,
+    "date": null,
     "sourceFilename": "shared image (32).jpg"
   },
   {
@@ -445,6 +500,7 @@
     "thumb": "/media/photos/thumb/photo-056.webp",
     "w": 1152,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (33).jpg"
   },
   {
@@ -453,6 +509,7 @@
     "thumb": "/media/photos/thumb/photo-057.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (34).jpg"
   },
   {
@@ -461,6 +518,7 @@
     "thumb": "/media/photos/thumb/photo-058.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (35).jpg"
   },
   {
@@ -469,6 +527,7 @@
     "thumb": "/media/photos/thumb/photo-059.webp",
     "w": 2048,
     "h": 1536,
+    "date": null,
     "sourceFilename": "shared image (36).jpg"
   },
   {
@@ -477,6 +536,7 @@
     "thumb": "/media/photos/thumb/photo-060.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (37).jpg"
   },
   {
@@ -485,6 +545,7 @@
     "thumb": "/media/photos/thumb/photo-061.webp",
     "w": 2048,
     "h": 1536,
+    "date": null,
     "sourceFilename": "shared image (38).jpg"
   },
   {
@@ -493,6 +554,7 @@
     "thumb": "/media/photos/thumb/photo-062.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (39).jpg"
   },
   {
@@ -501,6 +563,7 @@
     "thumb": "/media/photos/thumb/photo-063.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (4).jpg"
   },
   {
@@ -509,6 +572,7 @@
     "thumb": "/media/photos/thumb/photo-064.webp",
     "w": 960,
     "h": 1280,
+    "date": null,
     "sourceFilename": "shared image (40).jpg"
   },
   {
@@ -517,6 +581,7 @@
     "thumb": "/media/photos/thumb/photo-065.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (41).jpg"
   },
   {
@@ -525,6 +590,7 @@
     "thumb": "/media/photos/thumb/photo-066.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (42).jpg"
   },
   {
@@ -533,6 +599,7 @@
     "thumb": "/media/photos/thumb/photo-067.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (43).jpg"
   },
   {
@@ -541,6 +608,7 @@
     "thumb": "/media/photos/thumb/photo-068.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (44).jpg"
   },
   {
@@ -549,6 +617,7 @@
     "thumb": "/media/photos/thumb/photo-069.webp",
     "w": 1152,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (45).jpg"
   },
   {
@@ -557,6 +626,7 @@
     "thumb": "/media/photos/thumb/photo-070.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (46).jpg"
   },
   {
@@ -565,6 +635,7 @@
     "thumb": "/media/photos/thumb/photo-071.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (47).jpg"
   },
   {
@@ -573,6 +644,7 @@
     "thumb": "/media/photos/thumb/photo-072.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (48).jpg"
   },
   {
@@ -581,6 +653,7 @@
     "thumb": "/media/photos/thumb/photo-073.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (49).jpg"
   },
   {
@@ -589,6 +662,7 @@
     "thumb": "/media/photos/thumb/photo-074.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (5).jpg"
   },
   {
@@ -597,6 +671,7 @@
     "thumb": "/media/photos/thumb/photo-075.webp",
     "w": 3264,
     "h": 2448,
+    "date": null,
     "sourceFilename": "shared image (50).jpg"
   },
   {
@@ -605,6 +680,7 @@
     "thumb": "/media/photos/thumb/photo-076.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (51).jpg"
   },
   {
@@ -613,6 +689,7 @@
     "thumb": "/media/photos/thumb/photo-077.webp",
     "w": 2448,
     "h": 3264,
+    "date": null,
     "sourceFilename": "shared image (52).jpg"
   },
   {
@@ -621,6 +698,7 @@
     "thumb": "/media/photos/thumb/photo-078.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (53).jpg"
   },
   {
@@ -629,6 +707,7 @@
     "thumb": "/media/photos/thumb/photo-079.webp",
     "w": 1152,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (54).jpg"
   },
   {
@@ -637,6 +716,7 @@
     "thumb": "/media/photos/thumb/photo-080.webp",
     "w": 1536,
     "h": 2040,
+    "date": null,
     "sourceFilename": "shared image (55).jpg"
   },
   {
@@ -645,6 +725,7 @@
     "thumb": "/media/photos/thumb/photo-081.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (56).jpg"
   },
   {
@@ -653,6 +734,7 @@
     "thumb": "/media/photos/thumb/photo-082.webp",
     "w": 2040,
     "h": 1536,
+    "date": null,
     "sourceFilename": "shared image (57).jpg"
   },
   {
@@ -661,6 +743,7 @@
     "thumb": "/media/photos/thumb/photo-083.webp",
     "w": 2048,
     "h": 1536,
+    "date": null,
     "sourceFilename": "shared image (58).jpg"
   },
   {
@@ -669,6 +752,7 @@
     "thumb": "/media/photos/thumb/photo-084.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (59).jpg"
   },
   {
@@ -677,6 +761,7 @@
     "thumb": "/media/photos/thumb/photo-085.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (6).jpg"
   },
   {
@@ -685,6 +770,7 @@
     "thumb": "/media/photos/thumb/photo-086.webp",
     "w": 1152,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (60).jpg"
   },
   {
@@ -693,6 +779,7 @@
     "thumb": "/media/photos/thumb/photo-087.webp",
     "w": 2448,
     "h": 3264,
+    "date": null,
     "sourceFilename": "shared image (61).jpg"
   },
   {
@@ -701,6 +788,7 @@
     "thumb": "/media/photos/thumb/photo-088.webp",
     "w": 1280,
     "h": 2304,
+    "date": null,
     "sourceFilename": "shared image (62).jpg"
   },
   {
@@ -709,6 +797,7 @@
     "thumb": "/media/photos/thumb/photo-089.webp",
     "w": 1536,
     "h": 2040,
+    "date": null,
     "sourceFilename": "shared image (63).jpg"
   },
   {
@@ -717,6 +806,7 @@
     "thumb": "/media/photos/thumb/photo-090.webp",
     "w": 1280,
     "h": 2304,
+    "date": null,
     "sourceFilename": "shared image (64).jpg"
   },
   {
@@ -725,6 +815,7 @@
     "thumb": "/media/photos/thumb/photo-091.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (65).jpg"
   },
   {
@@ -733,6 +824,7 @@
     "thumb": "/media/photos/thumb/photo-092.webp",
     "w": 1080,
     "h": 1920,
+    "date": null,
     "sourceFilename": "shared image (66).jpg"
   },
   {
@@ -741,6 +833,7 @@
     "thumb": "/media/photos/thumb/photo-093.webp",
     "w": 1536,
     "h": 2040,
+    "date": null,
     "sourceFilename": "shared image (67).jpg"
   },
   {
@@ -749,6 +842,7 @@
     "thumb": "/media/photos/thumb/photo-094.webp",
     "w": 1152,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (68).jpg"
   },
   {
@@ -757,6 +851,7 @@
     "thumb": "/media/photos/thumb/photo-095.webp",
     "w": 1152,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (69).jpg"
   },
   {
@@ -765,6 +860,7 @@
     "thumb": "/media/photos/thumb/photo-096.webp",
     "w": 2016,
     "h": 1512,
+    "date": null,
     "sourceFilename": "shared image (7).jpg"
   },
   {
@@ -773,6 +869,7 @@
     "thumb": "/media/photos/thumb/photo-097.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (70).jpg"
   },
   {
@@ -781,6 +878,7 @@
     "thumb": "/media/photos/thumb/photo-098.webp",
     "w": 1536,
     "h": 2048,
+    "date": null,
     "sourceFilename": "shared image (71).jpg"
   },
   {
@@ -789,6 +887,7 @@
     "thumb": "/media/photos/thumb/photo-099.webp",
     "w": 1920,
     "h": 2560,
+    "date": null,
     "sourceFilename": "shared image (8).jpg"
   },
   {
@@ -797,6 +896,7 @@
     "thumb": "/media/photos/thumb/photo-100.webp",
     "w": 1512,
     "h": 2016,
+    "date": null,
     "sourceFilename": "shared image (9).jpg"
   }
 ]

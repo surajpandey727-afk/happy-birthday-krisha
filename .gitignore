@@ -32,3 +32,14 @@ next-env.d.ts
 # raw source media (not the optimized app-facing assets in public/media)
 /Media Gallery/
 server.log
+
+# large working files not needed in the deployed static site (docs/ carries
+# its own copy of what's actually served)
+/Updated UI Components/media/
+/Updated UI Components/uploads/
+/Updated UI Components/screenshots/
+/Updated UI Components/index.html
+/Luxury UI redesign with collapsible sidebar.zip
+/Sky_Cons.jpeg
+/Updated UI Components.zip
+/.impeccable/

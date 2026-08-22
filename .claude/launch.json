@@ -7,6 +7,20 @@
       "runtimeArgs": ["run", "dev"],
       "port": 4173,
       "autoPort": false
+    },
+    {
+      "name": "new-design-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/static-serve.mjs", "Updated UI Components", "5510"],
+      "port": 5510,
+      "autoPort": false
+    },
+    {
+      "name": "docs-final",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/static-serve.mjs", "docs", "5511"],
+      "port": 5511,
+      "autoPort": false
     }
   ]
 }

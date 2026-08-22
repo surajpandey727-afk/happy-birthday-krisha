@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { WorldShell } from '@/components/world/WorldShell';
 import { todaysLittleThing, dateLabel } from '@/lib/daily';
 import { PHOTO_DB } from '@content/photos';
@@ -75,7 +74,7 @@ export default function LittleThingsPage() {
   };
 
   return (
-    <WorldShell kicker="today's little thing" title="little things" blurb="there's no hurry. everything here waits for you.">
+    <WorldShell kicker="today's little thing" title="little things" blurb="there's no hurry. everything here waits for you." headline="kicker">
       <p className="font-nebulica text-[10px] uppercase tracking-[0.35em] text-muted-dim">{label}</p>
       <div className="mt-3">
         <RenderDaily item={today} />
@@ -91,18 +90,11 @@ export default function LittleThingsPage() {
           >
             yes, a little
           </button>
-          <AnimatePresence>
-            {missing && (
-              <motion.p
-                className="font-monigue mt-4 rounded-2xl bg-void/40 px-4 py-3 text-base italic text-parchment"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-              >
-                {missing}
-              </motion.p>
-            )}
-          </AnimatePresence>
+          {missing && (
+            <p className="fade-in-up font-monigue mt-4 rounded-2xl bg-void/40 px-4 py-3 text-base italic text-parchment">
+              {missing}
+            </p>
+          )}
         </div>
 
         <div className="card-tactile p-6">
@@ -114,33 +106,26 @@ export default function LittleThingsPage() {
           >
             go on then
           </button>
-          <AnimatePresence>
-            {smile && (
-              <motion.div
-                className="mt-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-              >
-                {smile.kind === 'photo' ? (
-                  <>
-                    <div className="overflow-hidden rounded-2xl">
-                      <MediaFigure media={smile.media} className="aspect-video w-full object-cover" />
-                    </div>
-                    <p className="font-monigue mt-2 text-center text-base italic text-parchment">{smile.caption}</p>
-                  </>
-                ) : smile.kind === 'doodle' ? (
-                  <p className="font-monigue rounded-2xl bg-void/40 px-4 py-3 text-center text-base italic text-parchment">
-                    {smile.prompt}
-                  </p>
-                ) : (
-                  <p className="font-monigue rounded-2xl bg-void/40 px-4 py-3 text-center text-base italic text-parchment">
-                    {smile.text}
-                  </p>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {smile && (
+            <div className="fade-in-up mt-4">
+              {smile.kind === 'photo' ? (
+                <>
+                  <div className="overflow-hidden rounded-2xl">
+                    <MediaFigure media={smile.media} className="aspect-video w-full object-cover" />
+                  </div>
+                  <p className="font-monigue mt-2 text-center text-base italic text-parchment">{smile.caption}</p>
+                </>
+              ) : smile.kind === 'doodle' ? (
+                <p className="font-monigue rounded-2xl bg-void/40 px-4 py-3 text-center text-base italic text-parchment">
+                  {smile.prompt}
+                </p>
+              ) : (
+                <p className="font-monigue rounded-2xl bg-void/40 px-4 py-3 text-center text-base italic text-parchment">
+                  {smile.text}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

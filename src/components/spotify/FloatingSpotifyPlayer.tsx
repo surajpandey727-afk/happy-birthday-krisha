@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
-import { AnimatePresence, motion } from 'framer-motion';
 import { spotifyConfig } from '@/config/spotify';
 import { sound } from '@/lib/sounds';
 
@@ -96,15 +95,8 @@ export function FloatingSpotifyPlayer() {
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.96 }}
-            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="w-72 overflow-hidden rounded-2xl border border-royal/40 bg-surface/95 shadow-luxe backdrop-blur"
-          >
+      {expanded && (
+        <div className="fade-in-up w-72 overflow-hidden rounded-2xl border border-royal/40 bg-surface/95 shadow-luxe backdrop-blur">
             <div className="flex items-center justify-between px-4 pt-3">
               <p className="font-nebulica text-[10px] uppercase tracking-[0.35em] text-royal-vivid">our soundtrack</p>
               <button
@@ -159,23 +151,15 @@ export function FloatingSpotifyPlayer() {
                 </div>
               </>
             )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       <div className="relative">
-        <AnimatePresence>
-          {hovering && !expanded && (
-            <motion.p
-              initial={{ opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
-              className="font-monigue absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded-full bg-surface/95 px-3 py-1.5 text-xs italic text-parchment shadow-luxe"
-            >
-              play our soundtrack
-            </motion.p>
-          )}
-        </AnimatePresence>
+        {hovering && !expanded && (
+          <p className="fade-in font-monigue absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded-full bg-surface/95 px-3 py-1.5 text-xs italic text-parchment shadow-luxe">
+            play our soundtrack
+          </p>
+        )}
 
         <button
           aria-label={expanded ? 'soundtrack player open' : 'play our soundtrack'}

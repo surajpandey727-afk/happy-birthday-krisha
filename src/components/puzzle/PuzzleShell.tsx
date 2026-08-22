@@ -1,6 +1,5 @@
 'use client';
 import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { PuzzleProgress } from './PuzzleProgress';
 
 /** Detective-archive chrome shared by every level: a dark, faintly gridded
@@ -30,17 +29,17 @@ export function PuzzleShell({
     >
       <PuzzleProgress totalLevels={totalLevels} currentLevel={levelIndex} completed={completed} />
 
-      <motion.div
-        key={levelIndex}
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-8"
-      >
+      {/* keyed on levelIndex so it genuinely remounts per level (needed for
+          the entrance animation to replay) — but the animation itself is
+          plain CSS (.route-enter's routeMaterialize keyframe), not
+          framer-motion, so every level's content is guaranteed to actually
+          become visible instead of risking staying at opacity:0 right when
+          she's trying to read the next clue. */}
+      <div key={levelIndex} className="route-enter mt-8">
         <p className="font-nebulica text-[10px] uppercase tracking-[0.5em] text-royal-vivid">{kicker}</p>
         <h2 className="mt-2 font-magnode text-3xl text-parchment sm:text-4xl">{title}</h2>
         <div className="mt-8">{children}</div>
-      </motion.div>
+      </div>
     </div>
   );
 }

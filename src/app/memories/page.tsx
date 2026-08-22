@@ -1,6 +1,5 @@
 'use client';
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useRef, useState, type CSSProperties } from 'react';
 import { WorldShell } from '@/components/world/WorldShell';
 import { MEMORY_DB } from '@content/memories';
 import { MediaFigure } from '@/components/media/MediaFigure';
@@ -8,12 +7,25 @@ import { PhotoViewer } from '@/components/media/PhotoViewer';
 import { sound } from '@/lib/sounds';
 import type { Media } from '@/lib/types';
 
+const MODAL_CLOSE_MS = 200;
+
 export default function MemoriesPage() {
   const open = MEMORY_DB.filter((m) => !m.hidden);
   const hidden = MEMORY_DB.filter((m) => m.hidden);
   const [active, setActive] = useState<(typeof MEMORY_DB)[number] | null>(null);
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef<number | null>(null);
   const [showHidden, setShowHidden] = useState(false);
   const [photoIdx, setPhotoIdx] = useState<number | null>(null);
+
+  const closeActive = () => {
+    setClosing(true);
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setActive(null);
+      setClosing(false);
+    }, MODAL_CLOSE_MS);
+  };
 
   const mediaOf = (m: (typeof MEMORY_DB)[number]): Media[] => [
     ...(m.photos ?? []),
@@ -21,22 +33,19 @@ export default function MemoriesPage() {
   ];
 
   return (
-    <WorldShell kicker="remember this?" title="memories" blurb="all the little maps of us.">
+    <WorldShell kicker="remember this?" title="memories" blurb="all the little maps of us." headline="kicker">
       <div className="flex flex-col gap-4">
         {open.map((m, i) => {
           const media = mediaOf(m);
           return (
-            <motion.button
+            <button
               key={m.id}
               onClick={() => {
                 sound.tap();
                 setActive(m);
               }}
-              className="card-tactile card-tactile-lift group flex w-full items-stretch gap-4 p-4 text-left"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.5, delay: (i % 4) * 0.06, ease: [0.22, 1, 0.36, 1] }}
+              className="fade-in-up card-tactile card-tactile-lift group flex w-full items-stretch gap-4 p-4 text-left"
+              style={{ '--fade-delay': `${(i % 4) * 0.06}s` } as CSSProperties}
             >
               {media[0] && (
                 <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-brown-warm/30 sm:h-28 sm:w-28">
@@ -54,7 +63,7 @@ export default function MemoriesPage() {
               <span className="self-center text-xl text-muted-dim transition-transform duration-300 group-hover:translate-x-1 group-hover:text-royal-vivid">
                 →
               </span>
-            </motion.button>
+            </button>
           );
         })}
       </div>
@@ -70,44 +79,40 @@ export default function MemoriesPage() {
         >
           {showHidden ? 'close the whisper' : 'there might be a whisper in the wall . . .'}
         </button>
-        <AnimatePresence>
-          {showHidden &&
-            hidden.map((m) => (
-              <motion.button
-                key={m.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => {
-                  sound.tap();
-                  setActive(m);
-                }}
-                className="card-inset font-monigue mt-3 block w-full px-4 py-4 text-left text-lg italic text-parchment transition-colors hover:border-royal-vivid/40"
-              >
-                {m.title ?? 'an unnamed moment'}
-              </motion.button>
-            ))}
-        </AnimatePresence>
+        {showHidden &&
+          hidden.map((m, i) => (
+            <button
+              key={m.id}
+              onClick={() => {
+                sound.tap();
+                setActive(m);
+              }}
+              className="fade-in card-inset font-monigue mt-3 block w-full px-4 py-4 text-left text-lg italic text-parchment transition-colors hover:border-royal-vivid/40"
+              style={{ '--fade-delay': `${i * 0.06}s` } as CSSProperties}
+            >
+              {m.title ?? 'an unnamed moment'}
+            </button>
+          ))}
       </div>
 
-      {/* memory detail */}
-      <AnimatePresence>
-        {active && (
-          <motion.div
-            className="fixed inset-0 z-[90] flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setActive(null)}
+      {/* memory detail — plain CSS @keyframes (see globals.css), not
+          framer-motion; a modal is a core interaction and must never
+          silently fail to appear. */}
+      {active && (
+        <div
+          className={`fixed inset-0 z-[90] flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm ${
+            closing ? 'animate-[lightboxScrimOut_200ms_ease_both]' : 'animate-[lightboxScrimIn_200ms_ease_both]'
+          }`}
+          onClick={closeActive}
+        >
+          <div
+            className={`card-tactile max-h-[86dvh] w-full max-w-lg overflow-y-auto p-6 ${
+              closing
+                ? 'animate-[modalCardOut_200ms_cubic-bezier(0.22,1,0.36,1)_both]'
+                : 'animate-[modalCardIn_320ms_cubic-bezier(0.22,1,0.36,1)_both]'
+            }`}
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              className="card-tactile max-h-[86dvh] w-full max-w-lg overflow-y-auto p-6"
-              initial={{ y: 36, opacity: 0, scale: 0.96 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 24, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 230, damping: 24 }}
-              onClick={(e) => e.stopPropagation()}
-            >
               <p className="font-nebulica text-[10px] uppercase tracking-[0.3em] text-royal-vivid">
                 {active.mood ?? 'us'} {active.date ? `· ${active.date}` : ''}
               </p>
@@ -138,15 +143,14 @@ export default function MemoriesPage() {
                 </div>
               )}
               <button
-                onClick={() => setActive(null)}
+                onClick={closeActive}
                 className="font-nebulica mt-6 w-full rounded-2xl border border-royal-vivid/40 py-3 text-[11px] uppercase tracking-[0.25em] text-royal-vivid transition-colors hover:bg-royal-vivid/10"
               >
                 close
               </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       {active && photoIdx != null && (
         <PhotoViewer

@@ -3,8 +3,8 @@ import { useCallback, useEffect, useImperativeHandle, useRef, useState, forwardR
 import { sound } from '@/lib/sounds';
 import { haptics } from '@/lib/haptics';
 
-const PALETTE = ['#efe4d0', '#28479e', '#a9a19a', '#6a4632', '#161218', '#d7c6aa'];
-const SIZES = [3, 7, 14];
+const PALETTE = ['#efe4d0', '#28479e', '#203a8e', '#a9a19a', '#6a4632', '#4b3226', '#161218', '#d7c6aa'];
+const SIZES = [2, 4, 8, 16];
 const PAPER_BG = '#161218';
 
 export interface DoodleCanvasHandle {
@@ -17,11 +17,13 @@ export interface DoodleCanvasHandle {
  * drawing speed — interpolating through the midpoint of each pair of
  * points, rather than the points themselves, is the standard cheap fix),
  * undo/redo via toDataURL snapshots, brush presets, and an eraser. */
-export const DoodleCanvas = forwardRef<DoodleCanvasHandle, { onDirtyChange?: (dirty: boolean) => void }>(
-  function DoodleCanvas({ onDirtyChange }, ref) {
+export const DoodleCanvas = forwardRef<
+  DoodleCanvasHandle,
+  { onDirtyChange?: (dirty: boolean) => void; heightClass?: string }
+>(function DoodleCanvas({ onDirtyChange, heightClass = 'h-[52dvh]' }, ref) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [color, setColor] = useState(PALETTE[0]);
-    const [size, setSize] = useState(SIZES[1]);
+    const [size, setSize] = useState(SIZES[2]);
     const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
     const [canUndo, setCanUndo] = useState(false);
     const [canRedo, setCanRedo] = useState(false);
@@ -31,16 +33,23 @@ export const DoodleCanvas = forwardRef<DoodleCanvasHandle, { onDirtyChange?: (di
     const redoStack = useRef<string[]>([]);
     const points = useRef<{ x: number; y: number }[]>([]);
     const dpr = useRef(1);
+    const everSetUp = useRef(false);
 
     const refreshButtons = useCallback(() => {
       setCanUndo(undoStack.current.length > 0);
       setCanRedo(redoStack.current.length > 0);
     }, []);
 
-    const setupCanvas = useCallback(() => {
+    // preserve=true redraws whatever was already on the canvas, scaled into
+    // the new size — needed because this now also fires when the container
+    // itself resizes (fullscreen toggle, sidebar collapse), not just the
+    // window, and a resize is not a reason to throw away a drawing.
+    const setupCanvas = useCallback((preserve = true) => {
       const c = canvasRef.current;
       if (!c) return;
       const rect = c.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      const prevDataUrl = preserve && everSetUp.current ? c.toDataURL() : null;
       dpr.current = Math.min(window.devicePixelRatio || 1, 2);
       c.width = Math.round(rect.width * dpr.current);
       c.height = Math.round(rect.height * dpr.current);
@@ -49,13 +58,24 @@ export const DoodleCanvas = forwardRef<DoodleCanvasHandle, { onDirtyChange?: (di
       ctx.scale(dpr.current, dpr.current);
       ctx.fillStyle = PAPER_BG;
       ctx.fillRect(0, 0, rect.width, rect.height);
+      if (prevDataUrl) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        img.src = prevDataUrl;
+      }
+      everSetUp.current = true;
     }, []);
 
     useEffect(() => {
-      setupCanvas();
-      const onResize = () => setupCanvas();
+      setupCanvas(false);
+      const onResize = () => setupCanvas(true);
       window.addEventListener('resize', onResize);
-      return () => window.removeEventListener('resize', onResize);
+      const ro = new ResizeObserver(onResize);
+      if (canvasRef.current) ro.observe(canvasRef.current);
+      return () => {
+        window.removeEventListener('resize', onResize);
+        ro.disconnect();
+      };
     }, [setupCanvas]);
 
     useImperativeHandle(ref, () => ({
@@ -152,14 +172,14 @@ export const DoodleCanvas = forwardRef<DoodleCanvasHandle, { onDirtyChange?: (di
       if (!c) return;
       undoStack.current.push(c.toDataURL());
       redoStack.current = [];
-      setupCanvas();
+      setupCanvas(false);
       refreshButtons();
       onDirtyChange?.(true);
       sound.pop();
     };
 
     return (
-      <div className="rounded-2xl border border-brown-warm/30 bg-surface/60 p-3">
+      <div className="card-tactile p-3">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <div className="flex overflow-hidden rounded-full bg-brown-deep/40 ring-1 ring-brown-warm/40">
             <button
@@ -210,7 +230,7 @@ export const DoodleCanvas = forwardRef<DoodleCanvasHandle, { onDirtyChange?: (di
 
         <canvas
           ref={canvasRef}
-          className="block h-[42dvh] w-full touch-none select-none rounded-xl"
+          className={`block w-full touch-none select-none rounded-xl ${heightClass}`}
           onPointerDown={onDown}
           onPointerMove={onMove}
           onPointerUp={onUp}

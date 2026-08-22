@@ -1,5 +1,6 @@
 import type { Media } from "@/lib/types";
 import manifest from "./generated-photo-manifest.json";
+import { ARCHIVE_CAPTIONS } from "./photo-captions";
 
 /**
  * The photo library — real photos, processed from the raw source dump into
@@ -11,10 +12,10 @@ import manifest from "./generated-photo-manifest.json";
  * bearing. They're grounded only in what's actually visible in each photo
  * (coastal towns, London street art, Dover, an airport departure, a couple
  * of candids) — nothing invented about the relationship itself, since
- * getting that wrong would land worse than saying nothing. The remaining
- * ~90 photos in the full archive get honest, unembellished captions; a
- * proper caption for every one of them is real work best done with her
- * input, which belongs in the dedicated copywriting pass, not guessed here.
+ * getting that wrong would land worse than saying nothing. Every other
+ * photo's caption lives in photo-captions.ts (ARCHIVE_CAPTIONS), written the
+ * same way — grounded in what's actually visible — so all 100 photos have
+ * real text under them, not just this curated 10.
  */
 const PREVIEW_CAPTIONS: Record<string, { caption: string; alt: string; mood?: string }> = {
   "photo-001": { caption: "a wall by the sea", alt: "sitting on a harbour wall, ruins across the water", mood: "golden" },
@@ -35,11 +36,27 @@ type ManifestEntry = {
   thumb: string;
   w: number;
   h: number;
+  date: string | null;
   sourceFilename: string;
 };
 
-const ALL_PHOTOS: Media[] = (manifest as ManifestEntry[]).map((entry) => {
-  const known = PREVIEW_CAPTIONS[entry.id];
+// Newest first. A photo with no recoverable capture date (no EXIF, no
+// filename-encoded date, and no per-file mtime — see the date-source summary
+// scripts/process-media.mjs prints) has no real signal to sort by, so it
+// keeps its original scan position and sorts after every dated photo rather
+// than being assigned a fabricated date. Array.sort is stable, so ties
+// (including "both undated") preserve that original order.
+const SORTED_ENTRIES: ManifestEntry[] = [...(manifest as ManifestEntry[])].sort((a, b) => {
+  const ad = a.date ? Date.parse(a.date) : null;
+  const bd = b.date ? Date.parse(b.date) : null;
+  if (ad === null && bd === null) return 0;
+  if (ad === null) return 1;
+  if (bd === null) return -1;
+  return bd - ad;
+});
+
+const ALL_PHOTOS: Media[] = SORTED_ENTRIES.map((entry) => {
+  const known = PREVIEW_CAPTIONS[entry.id] ?? ARCHIVE_CAPTIONS[entry.id];
   return {
     src: entry.src,
     thumb: entry.thumb,

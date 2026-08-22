@@ -7,7 +7,7 @@
  */
 
 const ALLOWED_TAGS = new Set([
-  "P", "BR", "B", "STRONG", "I", "EM", "U", "UL", "OL", "LI",
+  "P", "BR", "B", "STRONG", "I", "EM", "U", "S", "STRIKE", "UL", "OL", "LI",
   "H1", "H2", "H3", "A", "IMG", "DIV", "SPAN", "BLOCKQUOTE",
 ]);
 

@@ -1,14 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { sound } from '@/lib/sounds';
 
 const LINES = [
   "You've been looking for something new.",
   "It's been with you before.",
-  'It has crossed countries.',
-  "You've seen it without seeing it.",
-  'One last observation.',
+  'It has crossed countries with you and asked for nothing.',
+  "You've seen it without seeing it, every single day.",
+  'One last observation, detective.',
 ];
 
 export function Level5Reveal({ onComplete, alreadySolved = false }: { onComplete: () => void; alreadySolved?: boolean }) {
@@ -40,41 +39,32 @@ export function Level5Reveal({ onComplete, alreadySolved = false }: { onComplete
 
   return (
     <div className="flex min-h-[280px] flex-col items-center justify-center text-center">
-      {/* Two independent conditionals, not one AnimatePresence ternary: the
-       * reveal must render the instant `revealed` flips true, never held
-       * hostage by whether the outgoing line's exit animation actually
-       * finishes (framer-motion's exit tracking runs on rAF, which stalls
-       * indefinitely in a backgrounded tab — mode="wait" would leave the
-       * reveal stuck behind a transition that never gets to complete). */}
+      {/* Two independent conditionals, not one ternary: the reveal must
+       * render the instant `revealed` flips true, never held hostage by an
+       * outgoing line's exit animation. And neither half uses
+       * framer-motion — this is the entire point of the puzzle, so its
+       * visibility can't be allowed to depend on an animate step that has,
+       * in practice, sometimes just not run. Plain @keyframes (keyed per
+       * lineIndex so the fade-in genuinely replays each line) instead. */}
       {!revealed && (
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={lineIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="font-monigue max-w-md text-xl italic text-parchment"
-          >
-            {LINES[Math.min(lineIndex, LINES.length - 1)]}
-          </motion.p>
-        </AnimatePresence>
+        <p
+          key={lineIndex}
+          className="fade-in-up font-monigue max-w-md text-xl italic text-parchment"
+        >
+          {LINES[Math.min(lineIndex, LINES.length - 1)]}
+        </p>
       )}
 
       {revealed && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
+        <div className="clue-in">
           <p className="font-nebulica text-[10px] uppercase tracking-[0.5em] text-royal-vivid">the case is closed</p>
           <p className="font-apestron mt-4 text-3xl leading-tight text-parchment sm:text-4xl">
             Look beside the television.
           </p>
           <p className="font-monigue mt-4 max-w-sm text-sm italic text-muted">
-            The case has been waiting there the whole time. Go and open it.
+            It's been waiting there this whole time, patient as I am impatient for you to find it. Go on then.
           </p>
-        </motion.div>
+        </div>
       )}
     </div>
   );

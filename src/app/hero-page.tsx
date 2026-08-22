@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { HERO_MEDIA } from '@content/videos';
@@ -49,7 +49,7 @@ export default function HeroPage() {
     sound.success();
     haptics.success();
     setExiting(true);
-    window.setTimeout(() => router.push('/home'), 950);
+    window.setTimeout(() => router.push('/us'), 950);
   };
 
   return (
@@ -119,50 +119,36 @@ export default function HeroPage() {
 
       {/* ---- editorial typography ---- */}
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <motion.p
-          className="font-nebulica text-[10px] uppercase tracking-[0.55em] text-parchment/70"
-          initial={{ opacity: 0, letterSpacing: '0.2em' }}
-          animate={{ opacity: 1, letterSpacing: '0.55em' }}
-          transition={{ duration: 1.6, delay: 0.6, ease: 'easeOut' }}
-        >
+        <p className="hero-kicker-in font-nebulica text-[10px] uppercase tracking-[0.55em] text-parchment/70">
           {SITE.name}
-        </motion.p>
+        </p>
 
         <h1 className="font-apestron mt-4 text-[12vw] leading-[0.92] tracking-tight text-parchment sm:text-[6.5rem]">
-          <motion.span
-            className="block"
-            initial={{ opacity: 0, y: 46, filter: 'blur(14px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 1.1, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
-          >
-            YOU + ME
-          </motion.span>
-          <motion.span
-            className="block"
-            initial={{ opacity: 0, y: 40, filter: 'blur(12px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 1.1, delay: 1.35, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <span className="hero-title-in block" style={{ '--fade-delay': '0.2s' } as CSSProperties}>
+            STILL YOU<span className="text-royal-vivid">.</span>
+          </span>
+          <span className="hero-title-in block" style={{ '--fade-delay': '0.45s' } as CSSProperties}>
             STILL US<span className="text-royal-vivid">.</span>
-          </motion.span>
+          </span>
         </h1>
 
-        <motion.p
-          className="font-monigue mt-5 max-w-xs text-xl italic text-muted sm:max-w-md sm:text-2xl"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 2.1 }}
+        <p
+          className="fade-in font-monigue mt-5 max-w-xs text-xl italic text-muted sm:max-w-md sm:text-2xl"
+          style={{ '--fade-delay': '1.3s' } as CSSProperties}
         >
           a little place that belongs only to us.
-        </motion.p>
+        </p>
       </div>
 
-      {/* ---- come in ---- */}
-      <motion.div
+      {/* ---- come in — the only way into the whole site, so this can't
+          risk depending on framer-motion's animate step actually running.
+          showComeIn flips well after mount (a real setTimeout, not a
+          rAF-scheduled trigger), and a plain CSS opacity transition off
+          that state change is reliable the same way the sidebar's collapse
+          toggle is. */}
+      <div
         className="absolute inset-x-0 bottom-0 flex justify-center pb-[max(env(safe-area-inset-bottom),2.25rem)]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: showComeIn ? 1 : 0 }}
-        transition={{ duration: 0.8 }}
+        style={{ opacity: showComeIn ? 1 : 0, transitionProperty: 'opacity', transitionDuration: '800ms' } as CSSProperties}
       >
         <button
           onClick={enter}
@@ -174,17 +160,12 @@ export default function HeroPage() {
             →
           </span>
         </button>
-      </motion.div>
+      </div>
 
       {slowMo && (
-        <motion.p
-          className="font-monigue absolute left-0 right-0 top-6 text-center text-xl italic text-muted/80"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-        >
+        <p className="pop-in font-monigue absolute left-0 right-0 top-6 text-center text-xl italic text-muted/80">
           . . .
-        </motion.p>
+        </p>
       )}
     </main>
   );

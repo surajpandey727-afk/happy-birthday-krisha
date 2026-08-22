@@ -2,13 +2,16 @@
 import { useEffect, useRef } from 'react';
 import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
-const COMMANDS: { cmd: string; label: string; arg?: string }[] = [
-  { cmd: 'bold', label: 'B' },
-  { cmd: 'italic', label: 'I' },
-  { cmd: 'underline', label: 'U' },
-  { cmd: 'formatBlock', label: 'H', arg: 'h2' },
-  { cmd: 'insertUnorderedList', label: '•' },
-  { cmd: 'insertOrderedList', label: '1.' },
+const COMMANDS: { cmd: string; label: string; arg?: string; title: string }[] = [
+  { cmd: 'bold', label: 'B', title: 'bold' },
+  { cmd: 'italic', label: 'I', title: 'italic' },
+  { cmd: 'underline', label: 'U', title: 'underline' },
+  { cmd: 'strikeThrough', label: 'S', title: 'strikethrough' },
+  { cmd: 'formatBlock', label: 'H', arg: 'h2', title: 'heading' },
+  { cmd: 'formatBlock', label: '❝', arg: 'blockquote', title: 'quote' },
+  { cmd: 'insertUnorderedList', label: '•', title: 'bullet list' },
+  { cmd: 'insertOrderedList', label: '1.', title: 'numbered list' },
+  { cmd: 'removeFormat', label: '⌫', title: 'clear formatting' },
 ];
 
 /** A lightweight contentEditable rich-text editor — bold/italic/underline,
@@ -20,10 +23,12 @@ export function RichTextEditor({
   html,
   onChange,
   placeholder = 'start writing…',
+  minHeightClass = 'min-h-[48vh]',
 }: {
   html: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  minHeightClass?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   // null (not `html`) so the effect's first run after mount always syncs —
@@ -58,7 +63,7 @@ export function RichTextEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-brown-warm/30 bg-surface/60">
+    <div className="card-tactile">
       <div className="flex flex-wrap gap-1 border-b border-brown-warm/30 p-2">
         {COMMANDS.map((c) => (
           <button
@@ -67,7 +72,8 @@ export function RichTextEditor({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => exec(c.cmd, c.arg)}
             className="font-magnode flex h-8 w-8 items-center justify-center rounded-lg text-sm text-parchment transition-colors hover:bg-royal-vivid/15 hover:text-royal-vivid"
-            aria-label={c.cmd}
+            aria-label={c.title}
+            title={c.title}
           >
             {c.label}
           </button>
@@ -79,7 +85,7 @@ export function RichTextEditor({
         suppressContentEditableWarning
         onInput={handleInput}
         data-placeholder={placeholder}
-        className="notebook-editable min-h-[40vh] px-4 py-4 text-[15px] leading-relaxed text-parchment outline-none [&_h2]:font-magnode [&_h2]:mt-3 [&_h2]:text-xl [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+        className={`notebook-editable px-4 py-4 text-[15px] leading-relaxed text-parchment outline-none [&_h2]:font-magnode [&_h2]:mt-3 [&_h2]:text-xl [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5 [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-royal-vivid/50 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted ${minHeightClass}`}
       />
     </div>
   );

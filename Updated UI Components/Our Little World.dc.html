@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f%5B%5D=ranade@1,2&display=swap">
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+<script type="module" src="./floating-lines.js"></script>
+<script src="./drift-wall.js"></script>
+<style>
+  html, body { margin:0; padding:0; background:#000; height:100%; }
+  body { -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  * { box-sizing:border-box; }
+  a { color:#a99bf0; text-decoration:none; }
+  a:hover { color:#c8bdf8; }
+  ::selection { background:rgba(102,69,245,.35); color:#fff; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#1b1b22; border-radius:99px; border:2px solid #000; }
+  ::-webkit-scrollbar-track { background:#000; }
+  ::placeholder { color:#4d4a56; }
+  @keyframes olwGrain { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-1.2%,.8%)} }
+  @keyframes olwUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes olwIn { from{opacity:0} to{opacity:1} }
+  @keyframes olwModal { from{opacity:0;transform:translateY(18px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
+  @keyframes olwBreath { 0%,100%{opacity:.5} 50%{opacity:1} }
+  /* stays inside the faded range, so a pending stamp never reads as visited */
+  @keyframes olwPending { 0%,100%{opacity:.2} 50%{opacity:.44} }
+  @keyframes olwSnarkA { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes olwSnarkB { from{opacity:0;transform:translateY(-7px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</helmet>
+
+<div style="position:fixed;inset:0;background:#000;z-index:0"></div>
+<x-import component-from-global-scope="floating-lines" lines-gradient="#6645f5,#2fa8c0,#af45f5" animation-speed="2" interactive="true" bend-radius="12" bend-strength="1" mouse-damping="0.12" parallax="true" parallax-strength="1" hint-size="100%,100%" style="position:fixed;inset:0;width:100%;height:100%;z-index:1;opacity: {{ bgOpacity }}"></x-import>
+<div style="position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(105% 78% at 50% 0%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.74) 52%, rgba(0,0,0,.95) 100%)"></div>
+<div style="position:fixed;inset:-100%;z-index:60;pointer-events:none;opacity:.028;background-image:url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E&quot;);animation:olwGrain 9s ease-in-out infinite"></div>
+
+<!-- celebration: paints over everything, never intercepts a click -->
+<canvas ref="{{ confettiRef }}" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;z-index:200;pointer-events:none"></canvas>
+<button onClick="{{ blast }}" aria-label="throw confetti" title="throw confetti" style="position:fixed;top:24px;right:26px;z-index:80;width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);border-radius:13px;cursor:pointer;color:#d9b45a;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 14px 30px -18px rgba(0,0,0,1);transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .3s ease,color .3s ease" style-hover="transform:translateY(-2px);border-color:rgba(217,180,90,.45);color:#f0d081" style-active="transform:translateY(1px) scale(.96)">
+  <svg viewBox="0 0 256 256" style="width:18px;height:18px" fill="currentColor"><path d="M64.2,55.72a4,4,0,0,1,5.52-5.79c9.85,9.39,15,20.16,14.86,31.15A31.65,31.65,0,0,1,79.4,98.28,4,4,0,0,1,72.6,94a23.68,23.68,0,0,0,4-13.31C76.68,72.05,72.4,63.36,64.2,55.72ZM100,60a4,4,0,0,0,4-4V32a4,4,0,0,0-8,0V56A4,4,0,0,0,100,60Zm41.17,10.83a4,4,0,0,0,5.66,0l16-16a4,4,0,0,0-5.66-5.66l-16,16A4,4,0,0,0,141.17,70.83ZM240,152H216a4,4,0,0,0,0,8h24a4,4,0,0,0,0-8Zm-38.83-4.83a4,4,0,0,0-5.66,5.66l16,16a4,4,0,0,0,5.66-5.66Zm-9.65-56.4c-11-.13-21.76,5-31.15,14.86a4,4,0,0,0,5.79,5.52c7.64-8.2,16.33-12.48,25.06-12.35a23.68,23.68,0,0,1,13.31,4,4,4,0,0,0,4.31-6.74A31.65,31.65,0,0,0,191.52,90.77ZM188,52a4,4,0,0,0,0-8H176V32a4,4,0,0,0-8,0V44H156a4,4,0,0,0,0,8h12V64a4,4,0,0,0,8,0V52ZM175.6,131.16a20,20,0,0,1,0,28.28l-52.35,52.36a20,20,0,0,1-28.29,0L43.61,160.44a20,20,0,0,1,0-28.28L96,79.8a20,20,0,0,1,28.29,0ZM120,153.66,101.66,135.3,49.27,187.66a12,12,0,0,0,0,17l4.4,4.4a4,4,0,0,0,5.66,0Zm50,11.32a12,12,0,0,0-3.51-8.49L118.6,108.7a4,4,0,0,0-5.66,0L107.31,114.3l38.35,38.35a4,4,0,0,1-5.66,5.66L101.66,120,49.27,172.36a4,4,0,0,0,0,5.65l4.4,4.4a12,12,0,0,0,17,0Z"/></svg>
+</button>
+
+<div style="position:relative;z-index:10;min-height:100vh;font-family:Ranade,ui-sans-serif,system-ui,sans-serif;color:#e8e6ee;font-weight:400">
+
+  <!-- ─────────── the rail ─────────── -->
+  <aside style="position:fixed;top:0;bottom:0;left:0;width:256px;z-index:40;padding:20px 0 20px 20px;transition:transform .62s cubic-bezier(.22,1,.36,1),opacity .45s ease;transform: {{ railTransform }};opacity: {{ railOpacity }};pointer-events: {{ railEvents }}">
+    <div style="position:relative;height:100%;display:flex;flex-direction:column;padding:20px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,#0e0e13 0%,#08080b 54%,#050506 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.055), inset 0 -1px 0 rgba(0,0,0,.9), 0 24px 52px -30px rgba(0,0,0,1)">
+
+      <button onClick="{{ goEntrance }}" style="display:flex;align-items:center;gap:10px;padding:0 4px 18px;border:none;background:none;cursor:pointer;text-align:left;font:inherit;border-bottom:1px solid rgba(255,255,255,.05)">
+        <span style="width:26px;height:26px;flex:none;border-radius:8px;display:grid;place-items:center;background:linear-gradient(180deg,#17142b,#0b0916);box-shadow:inset 0 1px 0 rgba(255,255,255,.09);color:#8d7ce8">
+          <svg viewBox="0 0 256 256" style="width:14px;height:14px" fill="currentColor"><path d="M236,96a4,4,0,0,1-4,4H212v20a4,4,0,0,1-8,0V100H184a4,4,0,0,1,0-8h20V72a4,4,0,0,1,8,0V92h20A4,4,0,0,1,236,96ZM144,52h12V64a4,4,0,0,0,8,0V52h12a4,4,0,0,0,0-8H164V32a4,4,0,0,0-8,0V44H144a4,4,0,0,0,0,8Zm69.73,103.58a4,4,0,0,1,.71,4,92,92,0,1,1-118-118,4,4,0,0,1,5.29,4.54A93.18,93.18,0,0,0,100,64a92.1,92.1,0,0,0,92,92,93.18,93.18,0,0,0,17.91-1.74A4,4,0,0,1,213.73,155.58Zm-9.46,7.67A100,100,0,0,1,92.75,51.73,84,84,0,1,0,204.27,163.25Z"></path></svg>
+        </span>
+        <span>
+          <span style="display:block;font-size:9px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">our little</span>
+          <span style="display:block;margin-top:2px;font-size:14px;font-weight:700;letter-spacing:-.01em;color:#e8e6ee">World</span>
+        </span>
+      </button>
+
+      <nav aria-label="worlds" style="display:flex;flex-direction:column;gap:1px;padding:14px 0;flex:1;overflow-y:auto">
+        <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;text-align:left;font:inherit;font-size:14px;font-weight:500;transition:background .25s ease,color .25s ease;background: {{ homeBg }};color: {{ homeColor }}" style-hover="background:rgba(255,255,255,.035);color:#e8e6ee">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px;flex:none;opacity:.9" fill="currentColor"><path d="M236,96a4,4,0,0,1-4,4H212v20a4,4,0,0,1-8,0V100H184a4,4,0,0,1,0-8h20V72a4,4,0,0,1,8,0V92h20A4,4,0,0,1,236,96ZM144,52h12V64a4,4,0,0,0,8,0V52h12a4,4,0,0,0,0-8H164V32a4,4,0,0,0-8,0V44H144a4,4,0,0,0,0,8Zm69.73,103.58a4,4,0,0,1,.71,4,92,92,0,1,1-118-118,4,4,0,0,1,5.29,4.54A93.18,93.18,0,0,0,100,64a92.1,92.1,0,0,0,92,92,93.18,93.18,0,0,0,17.91-1.74A4,4,0,0,1,213.73,155.58Zm-9.46,7.67A100,100,0,0,1,92.75,51.73,84,84,0,1,0,204.27,163.25Z"></path></svg>
+          <span style="flex:1">our room</span>
+          <span style="width:4px;height:4px;border-radius:99px;background: {{ homeDot }}"></span>
+        </button>
+
+        <button onClick="{{ goUs }}" style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;text-align:left;font:inherit;font-size:14px;font-weight:500;transition:background .25s ease,color .25s ease;background: {{ usBg }};color: {{ usColor }}" style-hover="background:rgba(255,255,255,.035);color:#e8e6ee">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px;flex:none;opacity:.9" fill="currentColor"><path d="M208,36H80A12,12,0,0,0,68,48V68H48A12,12,0,0,0,36,80V208a12,12,0,0,0,12,12H176a12,12,0,0,0,12-12V188h20a12,12,0,0,0,12-12V48A12,12,0,0,0,208,36ZM76,48a4,4,0,0,1,4-4H208a4,4,0,0,1,4,4v79l-23.51-23.52a12,12,0,0,0-17,0L95,180H80a4,4,0,0,1-4-4ZM180,208a4,4,0,0,1-4,4H48a4,4,0,0,1-4-4V80a4,4,0,0,1,4-4H68V176a12,12,0,0,0,12,12H180Zm28-28H106.34l70.83-70.83a4,4,0,0,1,5.66,0L212,138.34V176A4,4,0,0,1,208,180Zm-88-72a20,20,0,1,0-20-20A20,20,0,0,0,120,108Zm0-32a12,12,0,1,1-12,12A12,12,0,0,1,120,76Z"></path></svg>
+          <span style="flex:1">us</span>
+          <span style="width:4px;height:4px;border-radius:99px;background: {{ usDot }}"></span>
+        </button>
+
+        <button onClick="{{ goMemories }}" style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;text-align:left;font:inherit;font-size:14px;font-weight:500;transition:background .25s ease,color .25s ease;background: {{ memBg }};color: {{ memColor }}" style-hover="background:rgba(255,255,255,.035);color:#e8e6ee">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px;flex:none;opacity:.9" fill="currentColor"><path d="M200,172a28,28,0,0,0-27.71,24H72a36,36,0,0,1,0-72h96a36,36,0,0,0,0-72H72a4,4,0,0,0,0,8h96a28,28,0,0,1,0,56H72a44,44,0,0,0,0,88H172.29A28,28,0,1,0,200,172Zm0,48a20,20,0,1,1,20-20A20,20,0,0,1,200,220Z"></path></svg>
+          <span style="flex:1">memories</span>
+          <span style="width:4px;height:4px;border-radius:99px;background: {{ memDot }}"></span>
+        </button>
+
+        <button onClick="{{ goNotebook }}" style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;text-align:left;font:inherit;font-size:14px;font-weight:500;transition:background .25s ease,color .25s ease;background: {{ nbBg }};color: {{ nbColor }}" style-hover="background:rgba(255,255,255,.035);color:#e8e6ee">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px;flex:none;opacity:.9" fill="currentColor"><path d="M180,112a4,4,0,0,1-4,4H112a4,4,0,0,1,0-8h64A4,4,0,0,1,180,112Zm-4,28H112a4,4,0,0,0,0,8h64a4,4,0,0,0,0-8Zm44-92V208a12,12,0,0,1-12,12H48a12,12,0,0,1-12-12V48A12,12,0,0,1,48,36H208A12,12,0,0,1,220,48ZM48,212H76V44H48a4,4,0,0,0-4,4V208A4,4,0,0,0,48,212ZM212,48a4,4,0,0,0-4-4H84V212H208a4,4,0,0,0,4-4Z"></path></svg>
+          <span style="flex:1">the notebook</span>
+          <span style="width:4px;height:4px;border-radius:99px;background: {{ nbDot }}"></span>
+        </button>
+
+        <button onClick="{{ goLittle }}" style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;text-align:left;font:inherit;font-size:14px;font-weight:500;transition:background .25s ease,color .25s ease;background: {{ ltBg }};color: {{ ltColor }}" style-hover="background:rgba(255,255,255,.035);color:#e8e6ee">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px;flex:none;opacity:.9" fill="currentColor"><path d="M227.9,144.24a20.45,20.45,0,0,0-17.84-3.53l-11.95,2.75C223.26,121.88,236,100.58,236,80c0-24.26-19.5-44-43.46-44A43.41,43.41,0,0,0,156,55.44,43.41,43.41,0,0,0,119.46,36C95.5,36,76,55.74,76,80c0,11.85,4.11,23.44,12.81,36a27.8,27.8,0,0,0-18.67,8.17L46.34,148H16A12,12,0,0,0,4,160v40a12,12,0,0,0,12,12H120a4,4,0,0,0,1-.12l64-16a4.69,4.69,0,0,0,.6-.2l38.82-16.54.22-.1a20.6,20.6,0,0,0,3.29-34.8ZM119.46,44A35.15,35.15,0,0,1,152.3,65.52a4,4,0,0,0,7.4,0A35.15,35.15,0,0,1,192.54,44C211.76,44,228,60.49,228,80c0,21.27-16.13,44-47.94,67.61L160.75,152A23.76,23.76,0,0,0,164,140a24,24,0,0,0-24-24H98.69C88.69,103,84,91.5,84,80,84,60.49,100.24,44,119.46,44ZM12,200V160a4,4,0,0,1,4-4H44v48H16A4,4,0,0,1,12,200Zm209.13-28.17L182.72,188.2,119.51,204H52V153.66l23.8-23.8A19.86,19.86,0,0,1,89.94,124H140a16,16,0,0,1,0,32H112a4,4,0,0,0,0,8h32a3.94,3.94,0,0,0,.9-.1l67-15.41.16,0a12.6,12.6,0,0,1,9,23.38Z"></path></svg>
+          <span style="flex:1">little things</span>
+          <span style="width:4px;height:4px;border-radius:99px;background: {{ ltDot }}"></span>
+        </button>
+
+        <sc-if value="{{ doorFound }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);animation:olwIn .8s ease both">
+            <button onClick="{{ goCase }}" style="display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;text-align:left;font:inherit;font-size:14px;font-weight:500;transition:background .25s ease,color .25s ease;background: {{ csBg }};color: {{ csColor }}" style-hover="background:rgba(255,255,255,.035);color:#e8e6ee">
+              <svg viewBox="0 0 256 256" style="width:17px;height:17px;flex:none;opacity:.9" fill="currentColor"><path d="M226.83,221.17l-52.7-52.7a84.1,84.1,0,1,0-5.66,5.66l52.7,52.7a4,4,0,0,0,5.66-5.66ZM36,112a76,76,0,1,1,76,76A76.08,76.08,0,0,1,36,112Z"></path></svg>
+              <span style="flex:1">the case</span>
+              <span style="width:4px;height:4px;border-radius:99px;background: {{ csDot }}"></span>
+            </button>
+          </div>
+        </sc-if>
+      </nav>
+
+      <!-- the player: a popover, so it never eats the nav's height -->
+      <sc-if value="{{ playerMounted }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:12px;bottom:62px;width:352px;max-width:calc(100vw - 40px);z-index:44;padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,#101016,#07070a);box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 34px 74px -34px rgba(0,0,0,1);animation:olwUp .34s cubic-bezier(.22,1,.36,1) both">
+          <div style="display:flex;align-items:center;gap:10px;padding:0 2px 12px">
+            <span style="width:15px;height:15px;flex:none;color:#1db954"><svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.13,104.13,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm50.85-83.29a4,4,0,0,1-5.49,1.38C155.62,123.4,132.9,120.68,105,127a4,4,0,1,1-1.77-7.8c29.79-6.77,54.36-3.71,74.24,8.22A4,4,0,0,1,178.85,132.71Zm-9.65,23.14a4,4,0,0,1-5.5,1.34c-14.87-9.09-33.11-11.4-55.7-6.28a4,4,0,1,1-1.77-7.8c24.6-5.58,44.83-2.94,61.63,7.33A4,4,0,0,1,169.2,155.85Zm18.9-45.11a4,4,0,0,1-5.44,1.53c-21.28-11.86-51-14.86-79.42-8.14a4,4,0,1,1-1.84-7.79c30.35-7.17,62.28-3.9,85.17,8.86A4,4,0,0,1,188.1,110.74Z"/></svg></span>
+            <p style="margin:0;flex:1;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">ours, on shuffle</p>
+            <button onClick="{{ togglePlayer }}" aria-label="collapse the player" title="collapse" style="width:26px;height:26px;flex:none;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;color:#6a6773;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee"><svg viewBox="0 0 256 256" style="width:13px;height:13px" fill="currentColor"><path d="M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z"/></svg></button>
+          </div>
+          <iframe ref="{{ playerRef }}" title="our playlist" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="width:100%;height:400px;border:none;border-radius:12px;display:block;background:#0a0a0d"></iframe>
+        </div>
+      </sc-if>
+      <button onClick="{{ togglePlayer }}" style="padding-top:14px;border:none;border-top:1px solid rgba(255,255,255,.05);border-radius:0;background:none;cursor:pointer;text-align:left;font:inherit;display:flex;align-items:center;gap:9px">
+        <span style="width:17px;height:17px;flex:none;color:#1db954">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.13,104.13,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm50.85-83.29a4,4,0,0,1-5.49,1.38C155.62,123.4,132.9,120.68,105,127a4,4,0,1,1-1.77-7.8c29.79-6.77,54.36-3.71,74.24,8.22A4,4,0,0,1,178.85,132.71Zm-9.65,23.14a4,4,0,0,1-5.5,1.34c-14.87-9.09-33.11-11.4-55.7-6.28a4,4,0,1,1-1.77-7.8c24.6-5.58,44.83-2.94,61.63,7.33A4,4,0,0,1,169.2,155.85Zm18.9-45.11a4,4,0,0,1-5.44,1.53c-21.28-11.86-51-14.86-79.42-8.14a4,4,0,1,1-1.84-7.79c30.35-7.17,62.28-3.9,85.17,8.86A4,4,0,0,1,188.1,110.74Z"/></svg>
+        </span>
+        <span style="flex:1;min-width:0;font-size:11.5px;color:#605d68;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ playerLabel }}</span>
+        <span style="width:5px;height:5px;flex:none;border-radius:99px;background:#2fa8c0;animation:olwBreath 3.4s ease-in-out infinite"></span>
+        <svg viewBox="0 0 256 256" style="width:12px;height:12px;flex:none;color:#4f4c58;transition:transform .5s cubic-bezier(.22,1,.36,1);transform: {{ playerCaret }}" fill="currentColor"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- rail toggle: one control, both directions -->
+  <button onClick="{{ toggleRail }}" aria-label="toggle navigation" style="position:fixed;top:24px;z-index:41;width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.06);border-radius:11px;cursor:pointer;color:#7c7987;background:linear-gradient(180deg,#0f0f14,#08080b);box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 22px -14px rgba(0,0,0,1);transition:left .62s cubic-bezier(.22,1,.36,1),color .25s ease,opacity .4s ease;left: {{ toggleLeft }};opacity: {{ toggleOpacity }};pointer-events: {{ toggleEvents }}" style-hover="color:#cfc9dd">
+    <svg viewBox="0 0 256 256" style="width:15px;height:15px;transition:transform .5s cubic-bezier(.22,1,.36,1);transform: {{ caretRotate }}" fill="currentColor"><path d="M162.83,205.17a4,4,0,0,1-5.66,5.66l-80-80a4,4,0,0,1,0-5.66l80-80a4,4,0,1,1,5.66,5.66L85.66,128Z"></path></svg>
+  </button>
+
+  <!-- ─────────── content ─────────── -->
+  <main style="min-height:100vh;padding:0 clamp(24px,5vw,64px) 96px;transition:padding-left .62s cubic-bezier(.22,1,.36,1);padding-left: {{ contentPad }};padding-top: {{ contentTop }}">
+
+    <!-- ── entrance ── -->
+    <sc-if value="{{ isEntrance }}" hint-placeholder-val="{{ false }}">
+      <section style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:900px;margin:0 auto;animation:olwIn 1.1s ease both">
+        <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.42em;text-transform:uppercase;color:#6a6773">our little world</p>
+        <h1 style="margin:22px 0 0;font-size:clamp(3rem,8vw,6rem);font-weight:700;line-height:.98;letter-spacing:-.045em;color:#f1eff6">still you.<br>still us<span style="color:#8d7ce8">.</span></h1>
+        <p style="margin:26px 0 0;max-width:34ch;font-size:19px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">a little place that belongs only to us. no address, no visitors.</p>
+        <div style="margin-top:44px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:12px;padding:15px 28px;border-radius:99px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font:inherit;font-size:14px;font-weight:500;white-space:nowrap;color:#f1eff6;background:linear-gradient(180deg,#1a1730,#0d0b18);box-shadow:inset 0 1px 0 rgba(255,255,255,.11), 0 16px 34px -20px rgba(102,69,245,.9);transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s ease" style-hover="transform:translateY(-2px);border-color:rgba(141,124,232,.42)" style-active="transform:translateY(1px)">
+            come in
+            <svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M218.83,130.83l-72,72a4,4,0,0,1-5.66-5.66L206.34,132H40a4,4,0,0,1,0-8H206.34L141.17,58.83a4,4,0,0,1,5.66-5.66l72,72A4,4,0,0,1,218.83,130.83Z"></path></svg>
+          </button>
+          <span style="font-size:12.5px;color:#514e5a">it remembers you between visits.</span>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── our room ── -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <section style="max-width:940px;margin:0 auto;animation:olwUp .6s cubic-bezier(.22,1,.36,1) both">
+        <div style="position:relative;overflow:hidden;padding:44px;border-radius:22px;border:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,#0e0e13 0%,#08080b 56%,#050506 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.055), inset 0 -1px 0 rgba(0,0,0,.9), 0 28px 60px -34px rgba(0,0,0,1)">
+          <button onClick="{{ tapMoon }}" aria-label="the moon" style="position:absolute;top:34px;right:34px;width:62px;height:62px;border-radius:99px;cursor:pointer;padding:0;overflow:hidden;border:1px solid rgba(255,255,255,.07);background:radial-gradient(circle at 34% 30%, #e9e5f2, #b9b3cc 44%, #4c4763 78%, #16141f 100%);box-shadow:inset 0 1px 2px rgba(255,255,255,.45), inset 0 -5px 12px rgba(0,0,0,.55), 0 0 30px -10px rgba(175,69,245,.4);transition:transform .4s cubic-bezier(.22,1,.36,1)" style-hover="transform:scale(1.05)" style-active="transform:scale(.97)">
+            <span style="position:absolute;right:-1px;top:-3px;width:44px;height:44px;border-radius:99px;background:radial-gradient(circle at 62% 60%,#0a0910,#050507);box-shadow:inset 3px 4px 9px rgba(0,0,0,.9)"></span>
+          </button>
+
+          <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#6a6773">{{ greeting }}</p>
+          <h1 style="margin:16px 0 0;font-size:clamp(2.4rem,5.6vw,4rem);font-weight:700;line-height:1;letter-spacing:-.04em;color:#f1eff6">our room</h1>
+          <p style="margin:18px 0 0;max-width:36ch;font-size:20px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">{{ note }}</p>
+
+          <div style="margin-top:38px;padding-top:26px;border-top:1px solid rgba(255,255,255,.05);display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:26px">
+            <div>
+              <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">today is</p>
+              <p style="margin:8px 0 0;font-size:17px;font-weight:500;color:#d6d3de">{{ dateLabel }}</p>
+            </div>
+            <div style="min-width:0">
+              <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">where we've been</p>
+              <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+                <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px">
+                  <sc-for list="{{ stamps }}" as="st" hint-placeholder-count="5">
+                    <span role="img" aria-label="{{ st.name }}" title="{{ st.name }}" style="width:32px;height:24px;flex:none;border-radius:5px;background-color:#0c0c11;background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), 0 2px 6px -2px rgba(0,0,0,.9);background-image: {{ st.src }};opacity: {{ st.opacity }};animation: {{ st.anim }}"></span>
+                  </sc-for>
+                </div>
+                <button onClick="{{ togglePassport }}" aria-label="add a country" title="add a country" style="width:26px;height:24px;flex:none;display:grid;place-items:center;border:1px dashed rgba(255,255,255,.13);border-radius:5px;cursor:pointer;background:none;color:#6a6773;transition:color .25s ease,border-color .25s ease" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.5)"><svg viewBox="0 0 256 256" style="width:11px;height:11px" fill="currentColor"><path d="M228,128a4,4,0,0,1-4,4H132v92a4,4,0,0,1-8,0V132H32a4,4,0,0,1,0-8h92V32a4,4,0,0,1,8,0v92h92A4,4,0,0,1,228,128Z"/></svg></button>
+              </div>
+              <p style="margin:7px 0 0;font-size:11px;letter-spacing:.14em;color:#454250">{{ stampCount }}</p>
+            </div>
+            <div>
+              <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">last kept</p>
+              <p style="margin:8px 0 0;font-size:17px;font-weight:500;color:#d6d3de">{{ lastKept }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- stellar fate — the sky on the night we met -->
+        <div style="margin-top:14px;padding:26px;border-radius:20px;border:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,#0e0e13,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 26px 56px -36px rgba(0,0,0,1);display:flex;flex-wrap:wrap;gap:30px;align-items:flex-start">
+
+          <!-- the poster -->
+          <figure style="margin:0;flex:0 1 296px;min-width:230px;padding:14px 14px 0;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,#101015,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 22px 48px -30px rgba(0,0,0,1)">
+            <div style="aspect-ratio:3/4;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.9), 0 0 44px -18px rgba(175,69,245,.35)">
+              <img src="media/eagle-nebula.png" alt="the eagle nebula, 20 may 2025" style="width:100%;height:100%;object-fit:cover;display:block">
+            </div>
+            <figcaption style="padding:16px 4px 18px;text-align:center;border-top:1px solid rgba(255,255,255,.05);margin-top:14px">
+              <p style="margin:0;font-size:9px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#5d5a66">the eagle nebula · m16</p>
+              <p style="margin:9px 0 0;font-size:16px;font-weight:600;letter-spacing:-.01em;color:#e8e6ee">20 may 2025</p>
+              <p style="margin:7px 0 0;font-size:10.5px;letter-spacing:.16em;color:#454250">serpens cauda · 18h 18m 48s, −13° 49′</p>
+            </figcaption>
+          </figure>
+
+          <!-- what it means -->
+          <div style="flex:1 1 380px;min-width:290px">
+            <div style="display:flex;align-items:center;gap:10px;color:#7e6fb8">
+              <svg viewBox="0 0 256 256" style="width:19px;height:19px" fill="currentColor"><path d="M196.2,132.81l-53.36-19.65L123.19,59.8a11.93,11.93,0,0,0-22.38,0L81.16,113.16,27.8,132.81a11.93,11.93,0,0,0,0,22.38l53.36,19.65,19.65,53.36a11.93,11.93,0,0,0,22.38,0l19.65-53.36,53.36-19.65a11.93,11.93,0,0,0,0-22.38Zm-2.77,14.87L138.35,168a4,4,0,0,0-2.37,2.37l-20.3,55.08a3.92,3.92,0,0,1-7.36,0L88,170.35A4,4,0,0,0,85.65,168l-55.08-20.3a3.92,3.92,0,0,1,0-7.36L85.65,120A4,4,0,0,0,88,117.65l20.3-55.08a3.92,3.92,0,0,1,7.36,0L136,117.65a4,4,0,0,0,2.37,2.37l55.08,20.3a3.92,3.92,0,0,1,0,7.36ZM148,40a4,4,0,0,1,4-4h20V16a4,4,0,0,1,8,0V36h20a4,4,0,0,1,0,8H180V64a4,4,0,0,1-8,0V44H152A4,4,0,0,1,148,40Zm96,48a4,4,0,0,1-4,4H228v12a4,4,0,0,1-8,0V92H208a4,4,0,0,1,0-8h12V72a4,4,0,0,1,8,0V84h12A4,4,0,0,1,244,88Z"></path></svg>
+              <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">stellar fate</p>
+            </div>
+            <h2 style="margin:16px 0 0;font-size:25px;font-weight:600;letter-spacing:-.025em;color:#e8e6ee">the sky above us, the first time</h2>
+            <p style="margin:10px 0 0;font-size:17px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">a star map from a time and a place that meant the world to me.</p>
+            <p style="margin:18px 0 0;max-width:52ch;font-size:15px;line-height:1.68;color:#8d8a96">overhead that night: the eagle nebula. its pillars of creation — the columns hubble made famous in 1995 — are an active star-forming region, and there are newborn stars still hidden inside those wispy towers. of all the sky it could have been, we got the part that was busy making things.</p>
+
+            <div style="margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.05);display:flex;flex-wrap:wrap;gap:24px">
+              <div style="flex:1 1 210px">
+                <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">me · taurus</p>
+                <p style="margin:8px 0 0;font-size:15px;font-weight:500;color:#d6d3de">20 may</p>
+                <p style="margin:7px 0 0;font-size:14px;line-height:1.6;color:#6f6c78">fixed earth. slow to move, and completely immovable once it has.</p>
+              </div>
+              <div style="flex:1 1 210px">
+                <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">you · leo–virgo cusp</p>
+                <p style="margin:8px 0 0;font-size:15px;font-weight:500;color:#d6d3de">23 august</p>
+                <p style="margin:7px 0 0;font-size:14px;line-height:1.6;color:#6f6c78">fire that lights a room and earth that notices everything in it. you are both, somehow.</p>
+              </div>
+            </div>
+            <p style="margin:22px 0 0;font-size:15px;font-weight:300;font-style:italic;line-height:1.55;color:#87848f">earth and fire, and a nursery for new stars sitting right between them. we didn't choose the date.</p>
+          </div>
+        </div>
+
+        <!-- the passport: a dialog, so it never opens below the fold -->
+        <sc-if value="{{ passportOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ togglePassport }}" style="position:fixed;inset:0;z-index:110;display:grid;place-items:center;padding:clamp(18px,4vw,44px);background:rgba(0,0,0,.86);backdrop-filter:blur(8px);animation:olwIn .22s ease both">
+          <div onClick="{{ stop }}" style="width:100%;max-width:640px;max-height:82vh;overflow:hidden;display:flex;flex-direction:column;padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,#0e0e13,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 40px 90px -46px rgba(0,0,0,1);animation:olwModal .32s cubic-bezier(.22,1,.36,1) both">
+            <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.05)">
+              <p style="margin:0;flex:1;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">the passport</p>
+              <button onClick="{{ togglePassport }}" style="border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:12px;font-weight:500;color:#7c7987;transition:color .25s ease" style-hover="color:#e8e6ee">done</button>
+            </div>
+            <p style="margin:16px 0 0;flex:none;font-size:14px;color:#6f6c78">tap to add a stamp. tap a stamp again to take it back.</p>
+            <div style="margin-top:16px;flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:7px;align-content:start">
+              <sc-for list="{{ allCountries }}" as="c" hint-placeholder-count="12">
+                <button onClick="{{ c.toggle }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;cursor:pointer;text-align:left;font:inherit;transition:background .25s ease,border-color .25s ease;background: {{ c.bg }};border: {{ c.border }};color: {{ c.color }}" style-hover="border-color:rgba(141,124,232,.55)">
+                  <span style="width:26px;height:19px;flex:none;border-radius:4px;background-color:#0c0c11;background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);background-image: {{ c.src }}"></span>
+                  <span style="flex:1;min-width:0;font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                  <span style="font-size:9px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color: {{ c.markColor }}">{{ c.mark }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          </div>
+        </sc-if>
+
+        <!-- the moon, and the door it hides -->
+        <div style="margin-top:14px;padding:20px 24px;border-radius:18px;border:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,#0c0c10,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.045);display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <span style="display:grid;place-items:center;width:19px;height:19px;flex:none;color:#7e6fb8">
+            <svg viewBox="0 0 256 256" style="width:19px;height:19px" fill="currentColor"><path d="M236,96a4,4,0,0,1-4,4H212v20a4,4,0,0,1-8,0V100H184a4,4,0,0,1,0-8h20V72a4,4,0,0,1,8,0V92h20A4,4,0,0,1,236,96ZM144,52h12V64a4,4,0,0,0,8,0V52h12a4,4,0,0,0,0-8H164V32a4,4,0,0,0-8,0V44H144a4,4,0,0,0,0,8Zm69.73,103.58a4,4,0,0,1,.71,4,92,92,0,1,1-118-118,4,4,0,0,1,5.29,4.54A93.18,93.18,0,0,0,100,64a92.1,92.1,0,0,0,92,92,93.18,93.18,0,0,0,17.91-1.74A4,4,0,0,1,213.73,155.58Zm-9.46,7.67A100,100,0,0,1,92.75,51.73,84,84,0,1,0,204.27,163.25Z"></path></svg>
+          </span>
+          <span style="flex:1;min-width:220px;font-size:15px;line-height:1.6;color:#8d8a96">{{ moonLine }}</span>
+          <sc-if value="{{ secretOpen }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ goSecret }}" style="display:flex;align-items:center;gap:10px;padding:11px 20px;border-radius:99px;border:1px solid rgba(141,124,232,.3);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#c9c1f0;background:linear-gradient(180deg,#161329,#0a0813);box-shadow:inset 0 1px 0 rgba(255,255,255,.09);animation:olwUp .5s cubic-bezier(.22,1,.36,1) both;transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.6)" style-active="transform:translateY(1px)">
+              <svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M232,220H204V40a12,12,0,0,0-12-12H64A12,12,0,0,0,52,40V220H24a4,4,0,0,0,0,8H232a4,4,0,0,0,0-8ZM196,40V220H172V36h20A4,4,0,0,1,196,40ZM60,40a4,4,0,0,1,4-4H164V220H60Zm80,92a8,8,0,1,1-8-8A8,8,0,0,1,140,132Z"></path></svg>
+              a door appeared
+            </button>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── us ── -->
+    <sc-if value="{{ isUs }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:1160px;margin:0 auto;animation:olwUp .6s cubic-bezier(.22,1,.36,1) both">
+        <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#6a6773">a wall of us</p>
+        <h1 style="margin:14px 0 0;font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;letter-spacing:-.04em;color:#f1eff6">us</h1>
+        <p style="margin:14px 0 0;max-width:38ch;font-size:18px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">every version of us I didn't want to lose.</p>
+        <div style="margin:28px 0 22px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#5d5a66;white-space:nowrap">{{ mediaCount }}</span>
+          <button onClick="{{ nextSnark }}" title="go on, click it" style="flex:1 1 240px;min-width:0;padding:0;border:none;background:none;cursor:pointer;text-align:left;font:inherit;font-size:13.5px;color:#7c7987;transition:color .3s ease;animation: {{ snarkAnim }}" style-hover="color:#c3c0cc">{{ snark }}</button>
+          <label style="position:relative;display:flex;align-items:center;gap:9px;padding:11px 20px;border-radius:99px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:12.5px;font-weight:500;white-space:nowrap;color:#f1eff6;background:linear-gradient(180deg,#1a1730,#0d0b18);box-shadow:inset 0 1px 0 rgba(255,255,255,.11);transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.42)">
+            <svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M228,128a4,4,0,0,1-4,4H132v92a4,4,0,0,1-8,0V132H32a4,4,0,0,1,0-8h92V32a4,4,0,0,1,8,0v92h92A4,4,0,0,1,228,128Z"></path></svg>
+            add
+            <input type="file" accept="image/*,video/*" multiple onChange="{{ addMedia }}" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer">
+          </label>
+        </div>
+        <div ref="{{ wallRef }}">
+        <x-import component-from-global-scope="drift-wall" items-json="{{ mediaJson }}" columns="{{ wallColumns }}" tile-width="200" tile-height="132" gap="18" tilt="16" turn="-14" perspective="1200" depth="120" speed="42" direction="up" variance="0.45" parallax="0.6" lift="64" fade="0.6" dim="0.55" overlay-color="#060010" radius="14" hint-size="100%,600px" style="display:block;width:100%;border-radius:20px;overflow:hidden;transition:height .7s cubic-bezier(.22,1,.36,1);height: {{ wallHeight }}"></x-import>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <p style="margin:0;flex:1 1 240px;font-size:12.5px;color:#4a4753">{{ mediaBreakdown }}</p>
+          <button onClick="{{ toggleWall }}" style="display:flex;align-items:center;gap:10px;padding:11px 22px;border-radius:99px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#c3c0cc;background:linear-gradient(180deg,#101016,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.4)" style-active="transform:translateY(1px)">
+            {{ wallLabel }}
+            <svg viewBox="0 0 256 256" style="width:14px;height:14px;transition:transform .5s cubic-bezier(.22,1,.36,1);transform: {{ wallCaret }}" fill="currentColor"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg>
+          </button>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── memories ── -->
+    <sc-if value="{{ isMemories }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:880px;margin:0 auto;animation:olwUp .6s cubic-bezier(.22,1,.36,1) both">
+        <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#6a6773">remember this?</p>
+        <h1 style="margin:14px 0 0;font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;letter-spacing:-.04em;color:#f1eff6">memories</h1>
+        <p style="margin:14px 0 32px;max-width:38ch;font-size:18px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">all the little maps of us.</p>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ memories }}" as="m">
+            <button onClick="{{ m.open }}" style="display:flex;align-items:center;gap:22px;width:100%;padding:20px 8px;text-align:left;font:inherit;cursor:pointer;background:none;border:none;border-bottom:1px solid rgba(255,255,255,.05);transition:padding .35s cubic-bezier(.22,1,.36,1)" style-hover="padding-left:16px">
+              <span style="width:78px;height:78px;flex:none;border-radius:11px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);background-color:#0a0a0d;background-size:cover;background-position:center;filter:saturate(.9) brightness(.92);background-image: {{ m.bg }}"></span>
+              <span style="flex:1;min-width:0;display:block">
+                <span style="display:block;font-size:10px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color: {{ m.moodColor }}">{{ m.meta }}</span>
+                <span style="display:block;margin-top:7px;font-size:21px;font-weight:600;letter-spacing:-.02em;color:#e8e6ee">{{ m.title }}</span>
+                <span style="display:block;margin-top:5px;font-size:14px;line-height:1.55;color:#6f6c78">{{ m.short }}</span>
+              </span>
+              <span style="flex:none;color:#4a4753">
+                <svg viewBox="0 0 256 256" style="width:17px;height:17px" fill="currentColor"><path d="M218.83,130.83l-72,72a4,4,0,0,1-5.66-5.66L206.34,132H40a4,4,0,0,1,0-8H206.34L141.17,58.83a4,4,0,0,1,5.66-5.66l72,72A4,4,0,0,1,218.83,130.83Z"></path></svg>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:34px">
+          <button onClick="{{ toggleWhisper }}" style="border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:14px;font-weight:300;font-style:italic;color:#605d68;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:5px;transition:color .3s ease" style-hover="color:#a99bf0">{{ whisperLabel }}</button>
+          <sc-if value="{{ showWhisper }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;padding:26px 28px;border-radius:18px;border:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,#0e0e13,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 26px 56px -36px rgba(0,0,0,1);animation:olwUp .45s cubic-bezier(.22,1,.36,1) both">
+              <div style="display:flex;align-items:center;gap:14px">
+                <p style="margin:0;flex:1;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">the wall, whispering</p>
+                <span style="font-size:10px;font-weight:500;letter-spacing:.2em;color:#454250">{{ whisperIndex }}</span>
+              </div>
+              <p style="margin:18px 0 0;max-width:52ch;font-size:19px;font-weight:300;font-style:italic;line-height:1.55;color:#ddd9e6">{{ whisperText }}</p>
+
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:18px">
+                <sc-for list="{{ whisperReplies }}" as="r">
+                  <p style="margin:0;padding:14px 18px;border-radius:13px;background:#050507;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-size:16px;font-weight:300;font-style:italic;line-height:1.55;animation:olwUp .42s cubic-bezier(.22,1,.36,1) both;color: {{ r.color }}">{{ r.text }}</p>
+                </sc-for>
+              </div>
+
+              <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+                <sc-if value="{{ whisperMore }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ pressWhisper }}" style="padding:12px 24px;border-radius:99px;border:1px solid rgba(141,124,232,.3);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#c9c1f0;background:linear-gradient(180deg,#161329,#0a0813);box-shadow:inset 0 1px 0 rgba(255,255,255,.09);transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.6)" style-active="transform:translateY(1px)">{{ whisperMoreLabel }}</button>
+                </sc-if>
+                <button onClick="{{ nextWhisper }}" style="padding:12px 22px;border-radius:99px;border:1px solid rgba(255,255,255,.07);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#7c7987;background:none;transition:color .3s ease" style-hover="color:#c3c0cc">another whisper</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── the notebook ── -->
+    <sc-if value="{{ isNotebook }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:1240px;margin:0 auto;animation: {{ padAnim }}">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:26px;flex-wrap:wrap;transition:opacity .4s ease;opacity: {{ padChrome }}">
+          <div>
+            <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#6a6773">paper &amp; pen</p>
+            <h1 style="margin:14px 0 0;font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;letter-spacing:-.04em;color:#f1eff6">the notebook</h1>
+            <p style="margin:14px 0 0;max-width:42ch;font-size:18px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">write it, draw it, paste a photo in the middle of a sentence. it stays here.</p>
+          </div>
+          <p style="margin:0;font-size:11px;font-weight:500;letter-spacing:.2em;color:#5d5a66">{{ noteStat }}</p>
+        </div>
+
+        <!-- the pad -->
+        <div style="margin: {{ padMargin }};display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,#0f0f15,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 34px 74px -38px rgba(0,0,0,1);transition:border-radius .35s ease;border-radius: {{ padRadius }};position: {{ padPosition }};inset: {{ padInset }};height: {{ padHeight }};z-index: {{ padZ }};padding: {{ padPadding }}">
+
+          <!-- title row -->
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.05)">
+            <input value="{{ noteTitle }}" onInput="{{ typeTitle }}" placeholder="untitled" style="flex:1 1 220px;min-width:0;padding:0;border:none;outline:none;background:none;font-family:Ranade,sans-serif;font-size:22px;font-weight:600;letter-spacing:-.02em;color:#e8e6ee">
+            <span style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:99px;background:rgba(255,255,255,.03);font-size:10px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;white-space:nowrap;color: {{ saveColor }}">
+              <span style="width:5px;height:5px;border-radius:99px;background: {{ saveColor }}"></span>
+              {{ saveLabel }}
+            </span>
+            <button onClick="{{ pickImage }}" aria-label="place an image" title="place an image" style="width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.055);border-radius:10px;cursor:pointer;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease;color:#7c7987" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)" style-active="transform:translateY(1px)"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M208,36H48A12,12,0,0,0,36,48V208a12,12,0,0,0,12,12H208a12,12,0,0,0,12-12V48A12,12,0,0,0,208,36ZM44,208V48a4,4,0,0,1,4-4H208a4,4,0,0,1,4,4v87l-31.51-31.52a12,12,0,0,0-17,0L55,212H48A4,4,0,0,1,44,208Zm164,4H66.34L169.17,109.17a4,4,0,0,1,5.66,0L212,146.34V208A4,4,0,0,1,208,212ZM96,116A20,20,0,1,0,76,96,20,20,0,0,0,96,116Zm0-32A12,12,0,1,1,84,96,12,12,0,0,1,96,84Z"/></svg></button>
+            <button onClick="{{ keepNote }}" aria-label="keep it" title="keep it" style="width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.055);border-radius:10px;cursor:pointer;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease;color:#7c7987" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)" style-active="transform:translateY(1px)"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M216.49,74.83,181.17,39.51A11.93,11.93,0,0,0,172.69,36H48A12,12,0,0,0,36,48V208a12,12,0,0,0,12,12H208a12,12,0,0,0,12-12V83.31A11.93,11.93,0,0,0,216.49,74.83ZM172,212H84V152a4,4,0,0,1,4-4h80a4,4,0,0,1,4,4Zm40-4a4,4,0,0,1-4,4H180V152a12,12,0,0,0-12-12H88a12,12,0,0,0-12,12v60H48a4,4,0,0,1-4-4V48a4,4,0,0,1,4-4H172.69a4,4,0,0,1,2.82,1.17l35.32,35.32A4,4,0,0,1,212,83.31ZM156,72a4,4,0,0,1-4,4H96a4,4,0,0,1,0-8h56A4,4,0,0,1,156,72Z"/></svg></button>
+            <button onClick="{{ exportNote }}" aria-label="export as html" title="export as html" style="width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.055);border-radius:10px;cursor:pointer;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease;color:#7c7987" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)" style-active="transform:translateY(1px)"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M220,144v64a4,4,0,0,1-4,4H40a4,4,0,0,1-4-4V144a4,4,0,0,1,8,0v60H212V144a4,4,0,0,1,8,0Zm-94.83,2.83a4,4,0,0,0,5.66,0l40-40a4,4,0,1,0-5.66-5.66L132,134.34V32a4,4,0,0,0-8,0V134.34L90.83,101.17a4,4,0,0,0-5.66,5.66Z"/></svg></button>
+            <button onClick="{{ deleteNote }}" aria-label="tear it out" title="tear it out" style="width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.055);border-radius:10px;cursor:pointer;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease;color:#7a5f74" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)" style-active="transform:translateY(1px)"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M216,52H172V40a20,20,0,0,0-20-20H104A20,20,0,0,0,84,40V52H40a4,4,0,0,0,0,8H52V208a12,12,0,0,0,12,12H192a12,12,0,0,0,12-12V60h12a4,4,0,0,0,0-8ZM92,40a12,12,0,0,1,12-12h48a12,12,0,0,1,12,12V52H92ZM196,208a4,4,0,0,1-4,4H64a4,4,0,0,1-4-4V60H196ZM108,104v64a4,4,0,0,1-8,0V104a4,4,0,0,1,8,0Zm48,0v64a4,4,0,0,1-8,0V104a4,4,0,0,1,8,0Z"/></svg></button>
+            <button onClick="{{ toggleFull }}" aria-label="fullscreen" title="fullscreen" style="width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.055);border-radius:10px;cursor:pointer;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease;color:#7c7987" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)" style-active="transform:translateY(1px)"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M212,48V88a4,4,0,0,1-8,0V52H168a4,4,0,0,1,0-8h40A4,4,0,0,1,212,48ZM88,204H52V168a4,4,0,0,0-8,0v40a4,4,0,0,0,4,4H88a4,4,0,0,0,0-8Zm120-40a4,4,0,0,0-4,4v36H168a4,4,0,0,0,0,8h40a4,4,0,0,0,4-4V168A4,4,0,0,0,208,164ZM88,44H48a4,4,0,0,0-4,4V88a4,4,0,0,0,8,0V52H88a4,4,0,0,0,0-8Z"/></svg></button>
+            <input type="file" accept="image/*" multiple onChange="{{ insertImage }}" ref="{{ fileRef }}" style="display:none">
+          </div>
+
+          <!-- write / draw -->
+          <div style="display:flex;align-items:center;gap:6px;padding:12px 0 0">
+            <span style="display:flex;gap:2px;padding:3px;border-radius:11px;background:rgba(255,255,255,.025);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)">
+              <button onClick="{{ goWrite }}" style="display:flex;align-items:center;gap:8px;padding:8px 16px;border:none;border-radius:9px;cursor:pointer;font:inherit;font-size:12px;font-weight:500;letter-spacing:.02em;transition:background .25s ease,color .25s ease;background: {{ writeBg }};color: {{ writeColor }}">
+                <svg viewBox="0 0 256 256" style="width:14px;height:14px" fill="currentColor"><path d="M227.32,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.32,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"/></svg>
+                write
+              </button>
+              <button onClick="{{ goDraw }}" style="display:flex;align-items:center;gap:8px;padding:8px 16px;border:none;border-radius:9px;cursor:pointer;font:inherit;font-size:12px;font-weight:500;letter-spacing:.02em;transition:background .25s ease,color .25s ease;background: {{ drawBg }};color: {{ drawColor }}">
+                <svg viewBox="0 0 256 256" style="width:14px;height:14px" fill="currentColor"><path d="M232.49,55.51l-32-32a12,12,0,0,0-17,0l-96,96A12,12,0,0,0,84,128v32a12,12,0,0,0,12,12h32a12,12,0,0,0,8.49-3.51l96-96A12,12,0,0,0,232.49,55.51ZM128,164H96a4,4,0,0,1-4-4V128a4,4,0,0,1,1.17-2.83l58.34-58.34,45.66,45.66-66.34,66.34A4,4,0,0,1,128,164Zm98.83-98.83L206.83,85.17,161.17,39.51l20-20a4,4,0,0,1,5.66,0l32,32A4,4,0,0,1,226.83,65.17ZM216,200a4,4,0,0,1-4,4H44a4,4,0,0,1,0-8H212A4,4,0,0,1,216,200Z"/></svg>
+                draw
+              </button>
+            </span>
+            <span style="flex:1"></span>
+            <sc-if value="{{ isDraw }}" hint-placeholder-val="{{ false }}">
+              <span style="display:flex;align-items:center;gap:12px">
+                <span style="display:flex;gap:2px;padding:3px;border-radius:10px;background:rgba(255,255,255,.025);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)">
+                  <button onClick="{{ pickPen }}" aria-label="pen" title="pen" style="width:28px;height:26px;display:grid;place-items:center;border:none;border-radius:7px;cursor:pointer;transition:background .2s ease,color .2s ease;background: {{ penBg }};color: {{ penColor }}"><svg viewBox="0 0 256 256" style="width:14px;height:14px" fill="currentColor"><path d="M232.49,55.51l-32-32a12,12,0,0,0-17,0l-96,96A12,12,0,0,0,84,128v32a12,12,0,0,0,12,12h32a12,12,0,0,0,8.49-3.51l96-96A12,12,0,0,0,232.49,55.51ZM128,164H96a4,4,0,0,1-4-4V128a4,4,0,0,1,1.17-2.83l58.34-58.34,45.66,45.66-66.34,66.34A4,4,0,0,1,128,164Zm98.83-98.83L206.83,85.17,161.17,39.51l20-20a4,4,0,0,1,5.66,0l32,32A4,4,0,0,1,226.83,65.17ZM216,200a4,4,0,0,1-4,4H44a4,4,0,0,1,0-8H212A4,4,0,0,1,216,200Z"/></svg></button>
+                  <button onClick="{{ pickEraser }}" aria-label="eraser" title="eraser" style="width:28px;height:26px;display:grid;place-items:center;border:none;border-radius:7px;cursor:pointer;transition:background .2s ease,color .2s ease;background: {{ eraserBg }};color: {{ eraserColor }}"><svg viewBox="0 0 256 256" style="width:14px;height:14px" fill="currentColor"><path d="M224,204H102.63l108.2-108.2a20,20,0,0,0,0-28.29L180.49,37.17a20,20,0,0,0-28.29,0L23.51,165.86a20,20,0,0,0,0,28.29L57.37,228A4,4,0,0,0,60,229.18V228h164a4,4,0,0,0,0-8ZM157.86,42.83a12,12,0,0,1,17,0l30.34,30.34a12,12,0,0,1,0,17L164,131.31,116.69,84ZM64.4,220.4,29.17,188.49a12,12,0,0,1,0-17L111,90.69,158.34,138,76.28,220.4a4,4,0,0,1-.28.26,4,4,0,0,1-5.66,0Z"/></svg></button>
+                </span>
+                <span style="display:flex;align-items:center;gap:7px">
+                  <sc-for list="{{ brushes }}" as="b">
+                    <button onClick="{{ b.pick }}" aria-label="brush {{ b.size }}" title="brush {{ b.size }}" style="width:26px;height:26px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;background:transparent;transition:background .2s ease" style-hover="background:rgba(255,255,255,.05)">
+                      <span style="border-radius:99px;transition:background .25s ease,box-shadow .25s ease;width: {{ b.dot }};height: {{ b.dot }};background: {{ b.bg }};box-shadow: {{ b.glow }}"></span>
+                    </button>
+                  </sc-for>
+                </span>
+                <button onClick="{{ clearDraw }}" style="padding:7px 14px;border:1px solid rgba(255,255,255,.055);border-radius:9px;cursor:pointer;font:inherit;font-size:11.5px;font-weight:500;color:#7a5f74;background:none;transition:color .25s ease,border-color .25s ease" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)">wipe the sheet</button>
+              </span>
+            </sc-if>
+          </div>
+
+          <!-- format row -->
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+            <sc-if value="{{ isWrite }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ doBold }}" aria-label="bold" title="bold" style="min-width:32px;height:32px;padding:0 9px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;font-family:Ranade,sans-serif;font-size:14px;font-weight:700;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee">B</button>
+            <button onClick="{{ doItalic }}" aria-label="italic" title="italic" style="min-width:32px;height:32px;padding:0 9px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;font-family:Ranade,sans-serif;font-size:14px;font-style:italic;font-weight:500;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee">I</button>
+            <button onClick="{{ doUnderline }}" aria-label="underline" title="underline" style="min-width:32px;height:32px;padding:0 9px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;font-family:Ranade,sans-serif;font-size:14px;text-decoration:underline;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee">U</button>
+            <span style="width:1px;height:18px;margin:0 7px;background:rgba(255,255,255,.07)"></span>
+            <button onClick="{{ doHeading }}" aria-label="heading" title="heading" style="min-width:32px;height:32px;padding:0 9px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;font-family:Ranade,sans-serif;font-size:14px;font-weight:700;font-size:15px;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee">H</button>
+            <button onClick="{{ doQuote }}" aria-label="quote" title="quote" style="min-width:32px;height:32px;padding:0 9px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;font-family:Ranade,sans-serif;font-size:14px;font-size:19px;line-height:1;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee">“</button>
+            <button onClick="{{ doList }}" aria-label="list" title="list" style="min-width:32px;height:32px;padding:0 9px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;font-family:Ranade,sans-serif;font-size:14px;font-size:17px;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee">•</button>
+            <button onClick="{{ doRule }}" aria-label="divider" title="divider" style="min-width:32px;height:32px;padding:0 9px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;font-family:Ranade,sans-serif;font-size:14px;font-size:15px;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee">—</button>
+            <span style="width:1px;height:18px;margin:0 7px;background:rgba(255,255,255,.07)"></span>
+            </sc-if>
+            <span style="display:flex;align-items:center;gap:5px">
+              <span style="display:grid;place-items:center;width:18px;height:18px;color:#5d5a66"><svg viewBox="0 0 256 256" style="width:14px;height:14px" fill="currentColor"><path d="M244,152a4,4,0,0,1-4,4H220v20a4,4,0,0,1-8,0V156H192a4,4,0,0,1,0-8h20V128a4,4,0,0,1,8,0v20h20A4,4,0,0,1,244,152ZM56,68H76V88a4,4,0,0,0,8,0V68h20a4,4,0,0,0,0-8H84V40a4,4,0,0,0-8,0V60H56a4,4,0,0,0,0,8ZM184,196H172V184a4,4,0,0,0-8,0v12H152a4,4,0,0,0,0,8h12v12a4,4,0,0,0,8,0V204h12a4,4,0,0,0,0-8ZM216.48,77.17,77.17,216.49a12,12,0,0,1-17,0L39.51,195.8a12,12,0,0,1,0-17L178.83,39.51a12,12,0,0,1,17,0L216.48,60.2A12,12,0,0,1,216.48,77.17ZM170.34,112,144,85.66,45.17,184.49a4,4,0,0,0,0,5.65l20.68,20.69a4,4,0,0,0,5.66,0Zm40.49-46.14L190.14,45.17a4,4,0,0,0-5.66,0L149.65,80,176,106.34l34.83-34.83A4,4,0,0,0,210.83,65.86Z"/></svg></span>
+              <sc-for list="{{ inks }}" as="ink">
+                <button onClick="{{ ink.pick }}" aria-label="{{ ink.name }}" title="{{ ink.name }}" style="width:20px;height:20px;border-radius:99px;cursor:pointer;padding:0;transition:transform .25s ease,box-shadow .25s ease;background: {{ ink.swatch }};border: {{ ink.border }};box-shadow: {{ ink.ring }}" style-hover="transform:scale(1.14)"></button>
+              </sc-for>
+            </span>
+            <span style="flex:1"></span>
+            <span style="font-size:11px;font-weight:500;letter-spacing:.16em;color:#4a4753;white-space:nowrap">{{ neonLabel }}</span>
+          </div>
+
+          <!-- the sheet -->
+          <sc-if value="{{ isDraw }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;position:relative;margin-top:18px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.04);box-shadow:inset 0 2px 8px rgba(0,0,0,.9);background:linear-gradient(180deg,#08080b,#040405),radial-gradient(circle at 1px 1px, rgba(255,255,255,.055) 1px, transparent 0) 0 0/24px 24px;min-height: {{ padMinHeight }}">
+              <canvas ref="{{ canvasRef }}" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor: {{ drawCursor }}"></canvas>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isWrite }}" hint-placeholder-val="{{ true }}">
+          <div contentEditable="true" ref="{{ editorRef }}" onInput="{{ onEdit }}" onPaste="{{ onPaste }}" data-placeholder="anything. even one line." style="flex:1;min-height: {{ padMinHeight }};margin-top:18px;padding:34px 38px;border-radius:14px;border:1px solid rgba(255,255,255,.04);outline:none;overflow-y:auto;font-family:Ranade,sans-serif;font-weight:300;font-size:19px;line-height:36px;caret-color:#a99bf0;background:linear-gradient(180deg,#08080b,#040405),repeating-linear-gradient(180deg,transparent 0 35px,rgba(255,255,255,.04) 35px 36px);background-position:0 34px;box-shadow:inset 0 2px 8px rgba(0,0,0,.9);color: {{ inkColor }};text-shadow: {{ inkGlow }}"></div>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:14px">
+            <span style="font-size:12.5px;color:#4a4753">paste an image straight into the page · ⌘S keeps it · esc leaves fullscreen</span>
+            <span style="flex:1"></span>
+            <span style="font-size:12.5px;color:#4a4753">{{ readTime }}</span>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── little things ── -->
+    <sc-if value="{{ isLittle }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:940px;margin:0 auto;animation:olwUp .6s cubic-bezier(.22,1,.36,1) both">
+        <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#6a6773">{{ dateLabel }}</p>
+        <h1 style="margin:14px 0 0;font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;letter-spacing:-.04em;color:#f1eff6">little things</h1>
+        <p style="margin:14px 0 32px;max-width:40ch;font-size:18px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">there's no hurry. everything here waits for you.</p>
+
+        <div style="padding:38px 40px;border-radius:20px;border:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,#0e0e13,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 26px 56px -36px rgba(0,0,0,1)">
+          <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">today's little thing</p>
+          <p style="margin:16px 0 0;font-size:24px;font-weight:300;font-style:italic;line-height:1.45;color:#ddd9e6">{{ daily }}</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin-top:14px">
+          <div style="padding:24px;border-radius:18px;border:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,#0c0c10,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.045)">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.015em;color:#e8e6ee">missing me?</h2>
+            <p style="margin:7px 0 18px;font-size:14.5px;color:#6f6c78">sit with it for a second.</p>
+            <button onClick="{{ missMe }}" style="padding:11px 22px;border-radius:99px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;color:#f1eff6;background:linear-gradient(180deg,#1a1730,#0d0b18);box-shadow:inset 0 1px 0 rgba(255,255,255,.11);transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.42)" style-active="transform:translateY(1px)">yes, a little</button>
+            <sc-if value="{{ missing }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:18px 0 0;padding:16px 18px;border-radius:13px;font-size:16px;font-weight:300;font-style:italic;line-height:1.55;color:#c6c2d1;background:#060608;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);animation:olwUp .45s cubic-bezier(.22,1,.36,1) both">{{ missing }}</p>
+            </sc-if>
+          </div>
+
+          <div style="padding:24px;border-radius:18px;border:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,#0c0c10,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.045)">
+            <h2 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.015em;color:#e8e6ee">make me smile</h2>
+            <p style="margin:7px 0 18px;font-size:14.5px;color:#6f6c78">small medicine, no side effects.</p>
+            <button onClick="{{ smileMe }}" style="padding:11px 22px;border-radius:99px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;color:#bfe0e7;background:linear-gradient(180deg,#0f2027,#081015);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:border-color .3s ease" style-hover="border-color:rgba(47,168,192,.42)" style-active="transform:translateY(1px)">go on then</button>
+            <sc-if value="{{ smile }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:18px 0 0;padding:16px 18px;border-radius:13px;font-size:16px;font-weight:300;font-style:italic;line-height:1.55;color:#c6c2d1;background:#060608;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);animation:olwUp .45s cubic-bezier(.22,1,.36,1) both">{{ smile }}</p>
+            </sc-if>
+          </div>
+        </div>
+
+        <p style="margin:36px 0 14px;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">some favourites</p>
+        <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px">
+          <sc-for list="{{ favourites }}" as="f">
+            <span style="width:132px;height:132px;flex:none;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);background-color:#0a0a0d;background-size:cover;background-position:center;filter:saturate(.9) brightness(.92);transition:transform .35s cubic-bezier(.22,1,.36,1);background-image: {{ f.bg }}" style-hover="transform:translateY(-4px)"></span>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── the case ── -->
+    <sc-if value="{{ isCase }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:820px;margin:0 auto;animation:olwUp .6s cubic-bezier(.22,1,.36,1) both">
+        <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.38em;text-transform:uppercase;color:#6a6773">a small investigation</p>
+        <h1 style="margin:14px 0 0;font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;letter-spacing:-.04em;color:#f1eff6">the case</h1>
+        <p style="margin:14px 0 32px;max-width:42ch;font-size:18px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">four clues, one secret. nothing here is quite what it seems.</p>
+
+        <!-- the file: one stage at a time -->
+        <div style="padding:30px;border-radius:20px;border:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,#0e0e13,#060608);box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 26px 56px -36px rgba(0,0,0,1)">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.05)">
+            <span style="font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">file 001 · us</span>
+            <span style="font-size:11px;font-weight:500;letter-spacing:.2em;color:#605d68">{{ caseProgress }}</span>
+          </div>
+
+          <!-- stage ledger: sealed stages stay sealed -->
+          <div style="display:flex;align-items:center;gap:7px;padding:16px 0 22px">
+            <sc-for list="{{ stageDots }}" as="d">
+              <span style="height:2px;flex:1;border-radius:99px;transition:background .5s ease;background: {{ d.bg }}"></span>
+            </sc-for>
+          </div>
+
+          <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:#8d7ce8">{{ stage.label }}</p>
+          <h2 style="margin:14px 0 0;font-size:26px;font-weight:600;letter-spacing:-.025em;color:#e8e6ee">{{ stage.lead }}</h2>
+
+          <div style="margin-top:20px;padding:24px 26px;border-radius:14px;background:#050507;box-shadow:inset 0 2px 8px rgba(0,0,0,.9)">
+            <p style="margin:0;white-space:pre-line;font-size:17px;font-weight:300;font-style:italic;line-height:1.85;color:#c6c2d1">{{ stage.body }}</p>
+            <p style="margin:20px 0 0;font-size:15px;font-weight:500;letter-spacing:.01em;color:#8d7ce8">{{ stage.ask }}</p>
+          </div>
+
+          <!-- the toll: a clue is never free -->
+          <sc-if value="{{ clueGateVisible }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;padding:24px;border-radius:16px;border:1px solid rgba(160,95,214,.22);background:linear-gradient(180deg,#101015,#070709);animation:olwUp .42s cubic-bezier(.22,1,.36,1) both">
+              <div style="display:flex;align-items:center;gap:10px;color:#a05fd6">
+                <svg viewBox="0 0 256 256" style="width:17px;height:17px" fill="currentColor"><path d="M208,84H172V56a44,44,0,0,0-88,0V84H48A12,12,0,0,0,36,96V208a12,12,0,0,0,12,12H208a12,12,0,0,0,12-12V96A12,12,0,0,0,208,84ZM92,56a36,36,0,0,1,72,0V84H92ZM212,208a4,4,0,0,1-4,4H48a4,4,0,0,1-4-4V96a4,4,0,0,1,4-4H208a4,4,0,0,1,4,4Z"/></svg>
+                <p style="margin:0;flex:1;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">the clue is sealed</p>
+                <button onClick="{{ cancelToll }}" style="border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:11.5px;font-weight:500;color:#5d5a66;transition:color .25s ease" style-hover="color:#c3c0cc">never mind</button>
+              </div>
+              <p style="margin:14px 0 0;max-width:52ch;font-size:17px;font-weight:300;font-style:italic;line-height:1.6;color:#c6c2d1">{{ tollLine }}</p>
+
+              <div style="margin-top:18px;display:flex;flex-wrap:wrap;gap:10px">
+                <button onClick="{{ payToll }}" style="display:flex;align-items:center;gap:10px;padding:13px 24px;border-radius:99px;border:1px solid rgba(160,95,214,.32);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#e5c9f5;background:linear-gradient(180deg,#1d1130,#0c0714);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);transition:border-color .3s ease;opacity: {{ tollKissOpacity }};pointer-events: {{ tollKissEvents }}" style-hover="border-color:rgba(160,95,214,.62)" style-active="transform:translateY(1px)">
+                  <svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M227.9,144.24a20.45,20.45,0,0,0-17.84-3.53l-11.95,2.75C223.26,121.88,236,100.58,236,80c0-24.26-19.5-44-43.46-44A43.41,43.41,0,0,0,156,55.44,43.41,43.41,0,0,0,119.46,36C95.5,36,76,55.74,76,80c0,11.85,4.11,23.44,12.81,36a27.8,27.8,0,0,0-18.67,8.17L46.34,148H16A12,12,0,0,0,4,160v40a12,12,0,0,0,12,12H120a4,4,0,0,0,1-.12l64-16a4.69,4.69,0,0,0,.6-.2l38.82-16.54.22-.1a20.6,20.6,0,0,0,3.29-34.8ZM119.46,44A35.15,35.15,0,0,1,152.3,65.52a4,4,0,0,0,7.4,0A35.15,35.15,0,0,1,192.54,44C211.76,44,228,60.49,228,80c0,21.27-16.13,44-47.94,67.61L160.75,152A23.76,23.76,0,0,0,164,140a24,24,0,0,0-24-24H98.69C88.69,103,84,91.5,84,80,84,60.49,100.24,44,119.46,44ZM12,200V160a4,4,0,0,1,4-4H44v48H16A4,4,0,0,1,12,200Zm209.13-28.17L182.72,188.2,119.51,204H52V153.66l23.8-23.8A19.86,19.86,0,0,1,89.94,124H140a16,16,0,0,1,0,32H112a4,4,0,0,0,0,8h32a3.94,3.94,0,0,0,.9-.1l67-15.41.16,0a12.6,12.6,0,0,1,9,23.38Z"/></svg>
+                  {{ tollKissLabel }}
+                </button>
+                <button onClick="{{ verifyToll }}" style="display:flex;align-items:center;gap:10px;padding:13px 24px;border-radius:99px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#bfe0e7;background:linear-gradient(180deg,#0f2027,#081015);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:border-color .3s ease;opacity: {{ tollConfirmOpacity }};pointer-events: {{ tollConfirmEvents }}" style-hover="border-color:rgba(47,168,192,.5)" style-active="transform:translateY(1px)">
+                  <svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M226.83,221.17l-52.7-52.7a84.1,84.1,0,1,0-5.66,5.66l52.7,52.7a4,4,0,0,0,5.66-5.66ZM36,112a76,76,0,1,1,76,76A76.08,76.08,0,0,1,36,112Z"/></svg>
+                  verify it, for the record
+                </button>
+              </div>
+
+              <sc-if value="{{ tollReleaseVisible }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ releaseClue }}" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:13px 26px;border-radius:99px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#f1eff6;background:linear-gradient(180deg,#1a1730,#0d0b18);box-shadow:inset 0 1px 0 rgba(255,255,255,.11), 0 14px 30px -20px rgba(102,69,245,.9);animation:olwUp .4s cubic-bezier(.22,1,.36,1) both;transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.42)" style-active="transform:translateY(1px)">
+                  unseal the clue
+                  <svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M218.83,130.83l-72,72a4,4,0,0,1-5.66-5.66L206.34,132H40a4,4,0,0,1,0-8H206.34L141.17,58.83a4,4,0,0,1,5.66-5.66l72,72A4,4,0,0,1,218.83,130.83Z"/></svg>
+                </button>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- clues on request -->
+          <sc-if value="{{ stage.hintShown }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:12px;padding:16px 18px;border-radius:13px;border:1px dashed rgba(141,124,232,.24);animation:olwUp .4s cubic-bezier(.22,1,.36,1) both">
+              <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">{{ stage.hintLabel }}</p>
+              <p style="margin:9px 0 0;font-size:15.5px;font-weight:300;font-style:italic;line-height:1.6;color:#a09ca9">{{ stage.hintText }}</p>
+            </div>
+          </sc-if>
+
+          <!-- the answer -->
+          <sc-if value="{{ stage.needsAnswer }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+              <input onInput="{{ typeAnswer }}" onKeyDown="{{ answerKey }}" value="{{ answerValue }}" placeholder="your answer, detective" style="flex:1 1 260px;padding:14px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.06);outline:none;font-family:Ranade,ui-sans-serif,sans-serif;font-size:15px;font-weight:400;color:#e8e6ee;background:#060608;box-shadow:inset 0 2px 6px rgba(0,0,0,.9)">
+              <button onClick="{{ submitAnswer }}" style="padding:14px 26px;border-radius:12px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#f1eff6;background:linear-gradient(180deg,#1a1730,#0d0b18);box-shadow:inset 0 1px 0 rgba(255,255,255,.11);transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.42)" style-active="transform:translateY(1px)">submit</button>
+              <button onClick="{{ askClue }}" style="padding:14px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.055);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#7c7987;background:none;transition:color .3s ease" style-hover="color:#c3c0cc">{{ clueLabel }}</button>
+            </div>
+            <p style="margin:14px 0 0;min-height:20px;font-size:15px;font-weight:300;font-style:italic;color: {{ verdictColor }}">{{ verdict }}</p>
+          </sc-if>
+
+          <!-- the seal: a kiss, then a straight-faced verification -->
+          <sc-if value="{{ gateVisible }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:20px;padding:24px;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,#101015,#070709);animation:olwUp .45s cubic-bezier(.22,1,.36,1) both">
+              <div style="display:flex;align-items:center;gap:10px;color:#a05fd6">
+                <svg viewBox="0 0 256 256" style="width:18px;height:18px" fill="currentColor"><path d="M208,84H172V56a44,44,0,0,0-88,0V84H48A12,12,0,0,0,36,96V208a12,12,0,0,0,12,12H208a12,12,0,0,0,12-12V96A12,12,0,0,0,208,84ZM92,56a36,36,0,0,1,72,0V84H92ZM212,208a4,4,0,0,1-4,4H48a4,4,0,0,1-4-4V96a4,4,0,0,1,4-4H208a4,4,0,0,1,4,4Z"></path></svg>
+                <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">the seal</p>
+              </div>
+              <p style="margin:14px 0 0;font-size:17px;font-weight:300;font-style:italic;line-height:1.55;color:#c6c2d1">{{ gateLine }}</p>
+
+              <div style="margin-top:18px;display:flex;flex-wrap:wrap;gap:10px">
+                <button onClick="{{ giveKiss }}" style="display:flex;align-items:center;gap:10px;padding:13px 24px;border-radius:99px;border:1px solid rgba(160,95,214,.32);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#e5c9f5;background:linear-gradient(180deg,#1d1130,#0c0714);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);transition:border-color .3s ease;opacity: {{ kissOpacity }};pointer-events: {{ kissEvents }}" style-hover="border-color:rgba(160,95,214,.62)" style-active="transform:translateY(1px)">
+                  <svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M227.9,144.24a20.45,20.45,0,0,0-17.84-3.53l-11.95,2.75C223.26,121.88,236,100.58,236,80c0-24.26-19.5-44-43.46-44A43.41,43.41,0,0,0,156,55.44,43.41,43.41,0,0,0,119.46,36C95.5,36,76,55.74,76,80c0,11.85,4.11,23.44,12.81,36a27.8,27.8,0,0,0-18.67,8.17L46.34,148H16A12,12,0,0,0,4,160v40a12,12,0,0,0,12,12H120a4,4,0,0,0,1-.12l64-16a4.69,4.69,0,0,0,.6-.2l38.82-16.54.22-.1a20.6,20.6,0,0,0,3.29-34.8ZM119.46,44A35.15,35.15,0,0,1,152.3,65.52a4,4,0,0,0,7.4,0A35.15,35.15,0,0,1,192.54,44C211.76,44,228,60.49,228,80c0,21.27-16.13,44-47.94,67.61L160.75,152A23.76,23.76,0,0,0,164,140a24,24,0,0,0-24-24H98.69C88.69,103,84,91.5,84,80,84,60.49,100.24,44,119.46,44ZM12,200V160a4,4,0,0,1,4-4H44v48H16A4,4,0,0,1,12,200Zm209.13-28.17L182.72,188.2,119.51,204H52V153.66l23.8-23.8A19.86,19.86,0,0,1,89.94,124H140a16,16,0,0,1,0,32H112a4,4,0,0,0,0,8h32a3.94,3.94,0,0,0,.9-.1l67-15.41.16,0a12.6,12.6,0,0,1,9,23.38Z"></path></svg>
+                  {{ kissLabel }}
+                </button>
+                <button onClick="{{ confirmKiss }}" style="display:flex;align-items:center;gap:10px;padding:13px 24px;border-radius:99px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#bfe0e7;background:linear-gradient(180deg,#0f2027,#081015);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:border-color .3s ease;opacity: {{ confirmOpacity }};pointer-events: {{ confirmEvents }}" style-hover="border-color:rgba(47,168,192,.5)" style-active="transform:translateY(1px)">
+                  <svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M226.83,221.17l-52.7-52.7a84.1,84.1,0,1,0-5.66,5.66l52.7,52.7a4,4,0,0,0,5.66-5.66ZM36,112a76,76,0,1,1,76,76A76.08,76.08,0,0,1,36,112Z"></path></svg>
+                  reconfirm, for the record
+                </button>
+              </div>
+
+              <sc-if value="{{ receiptVisible }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:18px;padding:18px 20px;border-radius:13px;background:#050507;box-shadow:inset 0 2px 8px rgba(0,0,0,.9);animation:olwUp .4s cubic-bezier(.22,1,.36,1) both">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding-bottom:12px;border-bottom:1px dashed rgba(255,255,255,.07)">
+                    <span style="font-size:9px;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:#5d5a66">evidence log</span>
+                    <span style="font-size:9px;font-weight:500;letter-spacing:.24em;color:#454250">{{ receiptRef }}</span>
+                  </div>
+                  <p style="margin:14px 0 0;font-size:15.5px;font-weight:300;font-style:italic;line-height:1.6;color:#c6c2d1">{{ receiptLine }}</p>
+                  <p style="margin:8px 0 0;font-size:13px;color:#605d68">{{ receiptFine }}</p>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ nextVisible }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ nextStage }}" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:13px 26px;border-radius:99px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#f1eff6;background:linear-gradient(180deg,#1a1730,#0d0b18);box-shadow:inset 0 1px 0 rgba(255,255,255,.11), 0 14px 30px -20px rgba(102,69,245,.9);animation:olwUp .4s cubic-bezier(.22,1,.36,1) both;transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.42)" style-active="transform:translateY(1px)">
+                  {{ nextLabel }}
+                  <svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M218.83,130.83l-72,72a4,4,0,0,1-5.66-5.66L206.34,132H40a4,4,0,0,1,0-8H206.34L141.17,58.83a4,4,0,0,1,5.66-5.66l72,72A4,4,0,0,1,218.83,130.83Z"></path></svg>
+                </button>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ caseClosed }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:22px;padding-top:22px;border-top:1px solid rgba(255,255,255,.05)">
+              <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:#5f9fae">case closed</p>
+              <p style="margin:14px 0 0;max-width:46ch;font-size:17px;font-weight:300;font-style:italic;line-height:1.6;color:#a09ca9">the suitcase. it crossed a border, carried the snacks, hid the choco pie, and got left half-unpacked in the corner for a week. you solved it before I finished writing it.</p>
+              <button onClick="{{ resetCase }}" style="margin-top:20px;border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;color:#a99bf0;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:5px">investigate again</button>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── the case, locked ── -->
+    <sc-if value="{{ isCaseLocked }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:640px;margin:0 auto;animation:olwUp .6s cubic-bezier(.22,1,.36,1) both">
+        <div style="padding:56px 44px;border-radius:20px;border:1px dashed rgba(255,255,255,.08);text-align:center">
+          <span style="display:inline-grid;place-items:center;width:44px;height:44px;border-radius:99px;color:#5d5a66;background:#0a0a0e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)">
+            <svg viewBox="0 0 256 256" style="width:20px;height:20px" fill="currentColor"><path d="M208,84H172V56a44,44,0,0,0-88,0V84H48A12,12,0,0,0,36,96V208a12,12,0,0,0,12,12H208a12,12,0,0,0,12-12V96A12,12,0,0,0,208,84ZM92,56a36,36,0,0,1,72,0V84H92ZM212,208a4,4,0,0,1-4,4H48a4,4,0,0,1-4-4V96a4,4,0,0,1,4-4H208a4,4,0,0,1,4,4Z"></path></svg>
+          </span>
+          <p style="margin:22px 0 0;font-size:19px;font-weight:300;font-style:italic;line-height:1.5;color:#a09ca9">there's a door in this world I haven't shown you.</p>
+          <p style="margin:12px 0 0;font-size:14px;color:#605d68">find it first. this case doesn't open for anyone who hasn't.</p>
+          <button onClick="{{ goHome }}" style="margin-top:28px;border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;color:#a99bf0;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:5px">back to our room</button>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ── the secret room ── -->
+    <sc-if value="{{ isSecret }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:640px;margin:0 auto;text-align:center;animation:olwIn .9s ease both">
+        <p style="margin:0;font-size:10px;font-weight:500;letter-spacing:.42em;text-transform:uppercase;color:#8d7ce8">you found the secret door</p>
+        <div style="margin:44px 0 0;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap">
+          <sc-for list="{{ stars }}" as="st" hint-placeholder-count="7">
+            <button onClick="{{ st.tap }}" style="width:40px;height:52px;display:grid;place-items:center;border:none;background:none;cursor:pointer;font:inherit;font-size:34px;font-weight:500;transition:opacity .6s ease,text-shadow .6s ease;color: {{ st.color }};opacity: {{ st.opacity }};text-shadow: {{ st.glow }}">{{ st.ch }}</button>
+          </sc-for>
+        </div>
+        <p style="margin:34px auto 0;max-width:34ch;font-size:17px;font-weight:300;font-style:italic;line-height:1.55;transition:opacity 1s ease;color:#a09ca9;opacity: {{ revealOpacity }}">a little phrase, just for us. it shows up all over this place, if you know where to look.</p>
+
+        <figure style="margin:44px auto 0;max-width:420px;padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,#101015,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 26px 56px -34px rgba(0,0,0,1);transition:opacity 1s ease;opacity: {{ revealOpacity }}">
+          <img src="media/unga-bunga.png" alt="me: this test can't be that hard. me on the first question: confused unga bunga" style="width:100%;display:block;border-radius:11px">
+        </figure>
+
+        <p style="margin:52px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:#4a4753">some doors only open for the curious</p>
+
+        <sc-if value="{{ revealed }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:44px;padding-top:36px;border-top:1px solid rgba(141,124,232,.16);animation:olwUp .6s cubic-bezier(.22,1,.36,1) both">
+            <p style="margin:0 auto;max-width:36ch;font-size:16px;font-weight:300;font-style:italic;line-height:1.6;color:#a09ca9">you went looking for a door that wasn't on any map. that's the part of you I'd follow anywhere.</p>
+            <p style="margin:16px auto 0;max-width:40ch;font-size:14px;font-weight:300;font-style:italic;line-height:1.6;color:#605d68">ishq par zor nahin hai, ye woh aatish, ghalib, ke lagaaye na lage aur bujhaaye na bane.</p>
+            <button onClick="{{ goCase }}" style="margin-top:30px;display:inline-flex;align-items:center;gap:10px;padding:13px 26px;border-radius:99px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;color:#f1eff6;background:linear-gradient(180deg,#1a1730,#0d0b18);box-shadow:inset 0 1px 0 rgba(255,255,255,.11), 0 14px 30px -20px rgba(102,69,245,.9);transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.42)">
+              there's a case waiting now
+              <svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M218.83,130.83l-72,72a4,4,0,0,1-5.66-5.66L206.34,132H40a4,4,0,0,1,0-8H206.34L141.17,58.83a4,4,0,0,1,5.66-5.66l72,72A4,4,0,0,1,218.83,130.83Z"></path></svg>
+            </button>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+  </main>
+
+  <!-- memory detail -->
+  <sc-if value="{{ activeMemory }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMemory }}" style="position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:32px;background:rgba(0,0,0,.86);backdrop-filter:blur(8px);animation:olwIn .22s ease both">
+      <div onClick="{{ stop }}" style="position:relative;width:100%;max-width:520px;max-height:86vh;overflow-y:auto;padding:30px;border-radius:20px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,#101015,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 40px 90px -46px rgba(0,0,0,1);animation:olwModal .32s cubic-bezier(.22,1,.36,1) both">
+        <button onClick="{{ closeMemory }}" aria-label="close" style="position:absolute;top:22px;right:22px;width:28px;height:28px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;color:#5d5a66;background:none;transition:color .25s ease" style-hover="color:#d3d0da">
+          <svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z"></path></svg>
+        </button>
+        <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:#8d7ce8">{{ activeMemory.meta }}</p>
+        <h2 style="margin:12px 0 0;font-size:27px;font-weight:700;letter-spacing:-.03em;color:#f1eff6">{{ activeMemory.title }}</h2>
+        <p style="margin:6px 0 0;font-size:15px;font-weight:300;font-style:italic;color:#6f6c78">{{ activeMemory.location }}</p>
+        <div role="img" style="margin-top:20px;aspect-ratio:4/3;border-radius:13px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);background-color:#0a0a0d;background-size:cover;background-position:center;filter:saturate(.94) brightness(.95);background-image: {{ activeMemory.bg }}"></div>
+        <p style="margin:20px 0 0;font-size:15.5px;line-height:1.65;color:#9a97a3">{{ activeMemory.description }}</p>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- the wall viewer: one piece at a time, the rest waiting below -->
+  <sc-if value="{{ viewerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeViewer }}" style="position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;gap:18px;padding:clamp(18px,3vw,40px);background:rgba(0,0,0,.93);backdrop-filter:blur(10px);animation:olwIn .22s ease both">
+
+      <div onClick="{{ stop }}" style="display:flex;align-items:center;gap:16px;flex:none">
+        <div style="flex:1;min-width:0">
+          <p style="margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">{{ viewerMeta }}</p>
+          <p style="margin:7px 0 0;font-size:19px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f1eff6">{{ viewerTitle }}</p>
+        </div>
+        <span style="flex:none;display:flex;align-items:center;gap:2px;padding:3px;border-radius:11px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)">
+          <button onClick="{{ zoomOut }}" aria-label="zoom out" title="zoom out" style="width:30px;height:30px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee"><svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M224,128a4,4,0,0,1-4,4H36a4,4,0,0,1,0-8H220A4,4,0,0,1,224,128Z"/></svg></button>
+          <span style="min-width:46px;text-align:center;font-size:11px;font-weight:500;letter-spacing:.08em;color:#a09ca9">{{ zoomLabel }}</span>
+          <button onClick="{{ zoomIn }}" aria-label="zoom in" title="zoom in" style="width:30px;height:30px;display:grid;place-items:center;border:none;border-radius:8px;cursor:pointer;color:#8b8896;background:transparent;transition:background .2s ease,color .2s ease" style-hover="background:rgba(255,255,255,.05);color:#e8e6ee"><svg viewBox="0 0 256 256" style="width:15px;height:15px" fill="currentColor"><path d="M228,128a4,4,0,0,1-4,4H132v92a4,4,0,0,1-8,0V132H32a4,4,0,0,1,0-8h92V32a4,4,0,0,1,8,0v92h92A4,4,0,0,1,228,128Z"/></svg></button>
+          <span style="width:1px;height:16px;margin:0 4px;background:rgba(255,255,255,.07)"></span>
+          <button onClick="{{ zoomFit }}" title="fit to window" style="padding:0 11px;height:30px;border:none;border-radius:8px;cursor:pointer;font:inherit;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;transition:background .2s ease,color .2s ease;background: {{ fitBg }};color: {{ fitColor }}">fit</button>
+          <button onClick="{{ zoomActual }}" title="original size" style="padding:0 11px;height:30px;border:none;border-radius:8px;cursor:pointer;font:inherit;font-size:11px;font-weight:500;letter-spacing:.1em;transition:background .2s ease,color .2s ease;background: {{ actualBg }};color: {{ actualColor }}">1:1</button>
+        </span>
+        <button onClick="{{ closeViewer }}" aria-label="close" title="close" style="width:36px;height:36px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);border-radius:11px;cursor:pointer;color:#8b8896;background:linear-gradient(180deg,#12121a,#08080c);transition:color .25s ease,border-color .25s ease" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)">
+          <svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z"/></svg>
+        </button>
+      </div>
+
+      <div onClick="{{ stop }}" style="flex:1;min-height:0;display:flex;align-items:center;gap:14px">
+        <button onClick="{{ prevItem }}" aria-label="previous" title="previous" style="width:44px;height:44px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);border-radius:99px;cursor:pointer;color:#8b8896;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.4)" style-active="transform:translateY(1px)">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px" fill="currentColor"><path d="M162.83,205.17a4,4,0,0,1-5.66,5.66l-80-80a4,4,0,0,1,0-5.66l80-80a4,4,0,1,1,5.66,5.66L85.66,128Z"/></svg>
+        </button>
+
+        <div ref="{{ frameRef }}" style="flex:1;min-width:0;height:100%;border-radius:18px;overflow:auto;border:1px solid rgba(255,255,255,.06);background:#050507;box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 40px 90px -46px rgba(0,0,0,1);animation:olwModal .32s cubic-bezier(.22,1,.36,1) both">
+          <div style="min-width:100%;min-height:100%;width:max-content;height:max-content;display:flex;align-items:center;justify-content:center">
+            <sc-if value="{{ viewerIsVideo }}" hint-placeholder-val="{{ false }}">
+              <video ref="{{ videoRef }}" controls="{{ true }}" autoPlay="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="display:block;flex:none;border-radius:10px;background:#000;width: {{ mediaW }};height: {{ mediaH }}"></video>
+            </sc-if>
+            <sc-if value="{{ viewerIsImage }}" hint-placeholder-val="{{ true }}">
+              <img ref="{{ imgRef }}" alt="{{ viewerTitle }}" style="display:block;flex:none;border-radius:10px;width: {{ mediaW }};height: {{ mediaH }}">
+            </sc-if>
+          </div>
+        </div>
+
+        <button onClick="{{ nextItem }}" aria-label="next" title="next" style="width:44px;height:44px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);border-radius:99px;cursor:pointer;color:#8b8896;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.4)" style-active="transform:translateY(1px)">
+          <svg viewBox="0 0 256 256" style="width:17px;height:17px" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
+        </button>
+      </div>
+
+      <div onClick="{{ stop }}" style="flex:none;display:flex;gap:8px;overflow-x:auto;padding:4px 2px 6px">
+        <sc-for list="{{ strip }}" as="t">
+          <button onClick="{{ t.jump }}" style="position:relative;width:96px;height:62px;flex:none;padding:0;border-radius:10px;cursor:pointer;overflow:hidden;background-color:#0a0a0d;background-size:cover;background-position:center;transition:opacity .3s ease,border-color .3s ease;background-image: {{ t.bg }};border: {{ t.border }};opacity: {{ t.opacity }}" style-hover="opacity:1">
+            <sc-if value="{{ t.isVideo }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;inset:0;display:grid;place-items:center;color:#8b8896;background:linear-gradient(180deg,#101016,#070709)">
+                <svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM224.11,134.7,80,222.86V33.01l144.11,88.16a7.8,7.8,0,0,1,0,13.53Z"/></svg>
+              </span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+
+      <p style="margin:0;flex:none;text-align:center;font-size:11.5px;color:#454250">arrow keys to move · esc to close</p>
+    </div>
+  </sc-if>
+
+  <!-- kept: a floating window that collapses to a capsule -->
+  <sc-if value="{{ isNotebook }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ keptScrim }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ toggleKept }}" style="position:fixed;inset:0;z-index:74;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);animation:olwIn .22s ease both"></div>
+    </sc-if>
+    <div style="position:fixed;right:26px;bottom:26px;z-index:75;display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+      <sc-if value="{{ keptOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="width:300px;max-height:56vh;display:flex;flex-direction:column;border-radius:20px;border:1px solid rgba(255,255,255,.07);background:linear-gradient(180deg,#101016,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 34px 70px -34px rgba(0,0,0,1);animation:olwUp .38s cubic-bezier(.22,1,.36,1) both;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:16px 16px 12px">
+            <span style="display:grid;place-items:center;width:16px;height:16px;color:#7e6fb8"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M180,112a4,4,0,0,1-4,4H112a4,4,0,0,1,0-8h64A4,4,0,0,1,180,112Zm-4,28H112a4,4,0,0,0,0,8h64a4,4,0,0,0,0-8Zm44-92V208a12,12,0,0,1-12,12H48a12,12,0,0,1-12-12V48A12,12,0,0,1,48,36H208A12,12,0,0,1,220,48ZM48,212H76V44H48a4,4,0,0,0-4,4V208A4,4,0,0,0,48,212ZM212,48a4,4,0,0,0-4-4H84V212H208a4,4,0,0,0,4-4Z"/></svg></span>
+            <p style="margin:0;flex:1;font-size:9.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66">kept · {{ keptCount }}</p>
+            <button onClick="{{ newNote }}" aria-label="new page" title="new page" style="width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.055);border-radius:10px;cursor:pointer;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease;color:#7c7987" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)" style-active="transform:translateY(1px)"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M220,128a4,4,0,0,1-4,4H132v84a4,4,0,0,1-8,0V132H40a4,4,0,0,1,0-8h84V40a4,4,0,0,1,8,0v84h84A4,4,0,0,1,220,128Z"/></svg></button>
+            <button onClick="{{ toggleKept }}" aria-label="collapse" title="collapse" style="width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.055);border-radius:10px;cursor:pointer;background:linear-gradient(180deg,#12121a,#08080c);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:color .25s ease,border-color .25s ease;color:#7c7987" style-hover="color:#e8e6ee;border-color:rgba(141,124,232,.35)" style-active="transform:translateY(1px)"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M202.83,197.17a4,4,0,0,1-5.66,5.66L128,133.66,58.83,202.83a4,4,0,0,1-5.66-5.66L122.34,128,53.17,58.83a4,4,0,0,1,5.66-5.66L128,122.34l69.17-69.17a4,4,0,1,1,5.66,5.66L133.66,128Z"/></svg></button>
+          </div>
+          <input value="{{ search }}" onInput="{{ typeSearch }}" placeholder="search the pages…" style="margin:0 16px 12px;padding:10px 14px;border-radius:11px;border:1px solid rgba(255,255,255,.055);outline:none;font-family:Ranade,sans-serif;font-size:13px;color:#e8e6ee;background:#060608;box-shadow:inset 0 2px 6px rgba(0,0,0,.9)">
+          <div style="flex:1;overflow-y:auto;padding:0 10px 14px;display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ notes }}" as="n">
+              <button onClick="{{ n.open }}" style="display:block;width:100%;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;text-align:left;font:inherit;transition:background .25s ease;background: {{ n.bg }}" style-hover="background:rgba(255,255,255,.045)">
+                <span style="display:flex;align-items:baseline;gap:8px">
+                  <span style="flex:1;min-width:0;font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color: {{ n.color }}">{{ n.title }}</span>
+                  <span style="padding:3px 7px;border-radius:6px;font-size:8.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;background:rgba(255,255,255,.035);color: {{ n.kindColor }}">{{ n.kind }}</span>
+                  <span style="font-size:10px;letter-spacing:.14em;color:#454250;white-space:nowrap">{{ n.date }}</span>
+                </span>
+                <span style="display:block;margin-top:4px;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#5d5a66">{{ n.excerpt }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:14px 12px;font-size:14px;font-weight:300;font-style:italic;color:#5d5a66">nothing matches that.</p>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ keptClosed }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ toggleKept }}" style="display:flex;align-items:center;gap:10px;padding:13px 20px;border-radius:99px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font:inherit;font-size:12.5px;font-weight:500;white-space:nowrap;color:#c3c0cc;background:linear-gradient(180deg,#101016,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 20px 40px -22px rgba(0,0,0,1);animation:olwUp .3s cubic-bezier(.22,1,.36,1) both;transition:border-color .3s ease" style-hover="border-color:rgba(141,124,232,.4)">
+          <span style="display:grid;place-items:center;width:16px;height:16px;color:#7e6fb8"><svg viewBox="0 0 256 256" style="width:16px;height:16px" fill="currentColor"><path d="M180,112a4,4,0,0,1-4,4H112a4,4,0,0,1,0-8h64A4,4,0,0,1,180,112Zm-4,28H112a4,4,0,0,0,0,8h64a4,4,0,0,0,0-8Zm44-92V208a12,12,0,0,1-12,12H48a12,12,0,0,1-12-12V48A12,12,0,0,1,48,36H208A12,12,0,0,1,220,48ZM48,212H76V44H48a4,4,0,0,0-4,4V208A4,4,0,0,0,48,212ZM212,48a4,4,0,0,0-4-4H84V212H208a4,4,0,0,0,4-4Z"/></svg></span>
+          kept · {{ keptCount }}
+        </button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- toast -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:30px;transform:translateX(-50%);z-index:80;padding:13px 24px;border-radius:99px;border:1px solid rgba(255,255,255,.07);font-size:14.5px;font-weight:300;font-style:italic;color:#d3d0da;background:linear-gradient(180deg,#101015,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 20px 40px -24px rgba(0,0,0,1);animation:olwUp .35s cubic-bezier(.22,1,.36,1) both">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const NOTES = [
+  'you noticed.',
+  "this one's my favourite.",
+  'i \u2764 kripi',
+  'still us.',
+  'look what we did.',
+  'one more thing\u2026',
+  'kabhi kabhi mere dil mein khayal aata hai, ke jaise tujhko banaya gaya hai mere liye.'
+];
+
+const MISSING_ME = [
+  'hazy morning, feels like a withdrawal symptom.',
+  'sit with me for a second.',
+  "you're the calm in all of my noise.",
+  "close your eyes. i'm exactly where you left me.",
+  'i carry us with me everywhere.',
+  'the pink sweatshirt is steadily losing your smell. so are my arms.',
+  'saason zara dheere aahiste chalo. teri yaad aayi hai.',
+  "some silences say more than words could. i'm sitting in one of them right now, thinking of you."
+];
+
+const SMILE = [
+  'remember that tiny laugh? i saved it.',
+  "official notice, you're good at being you.",
+  "are you a bank loan? because you've got my interest, and i'm terrible at paying things back.",
+  'if you had a twin, i would still choose you.',
+  'you bring the warmth. i bring the terrible jokes. balanced diet.',
+  "one year doesn't feel long. it feels like i've known you forever, and i'd take forever again."
+];
+
+const PHOTOS = [
+  { src: "media/photos/full/photo-025.webp", caption: "resting on the sofa" },
+  { src: "media/photos/full/photo-023.webp", caption: "curled up together" },
+  { src: "media/photos/full/photo-027.webp", caption: "an extreme close up" },
+  { src: "media/photos/full/photo-021.webp", caption: "late, laughing" },
+  { src: "media/photos/full/photo-020.webp", caption: "caught looking away" },
+  { src: "media/photos/full/photo-019.webp", caption: "dinner, caught smiling" },
+  { src: "media/photos/full/photo-018.webp", caption: "a kiss in the lift" },
+  { src: "media/photos/full/photo-017.webp", caption: "smiling for a selfie" },
+  { src: "media/photos/full/photo-016.webp", caption: "the white cliffs" },
+  { src: "media/photos/full/photo-015.webp", caption: "the view from the tent" },
+  { src: "media/photos/full/photo-014.webp", caption: "flowers in her hair" },
+  { src: "media/photos/full/photo-013.webp", caption: "dame vera lynn way" },
+  { src: "media/photos/full/photo-029.webp", caption: "on the bus" },
+  { src: "media/photos/full/photo-024.webp", caption: "a video call screenshot" },
+  { src: "media/photos/full/photo-002.webp", caption: "cambridge, an afternoon" },
+  { src: "media/photos/full/photo-001.webp", caption: "a wall by the sea" },
+  { src: "media/photos/full/photo-026.webp", caption: "a silhouette at the window" },
+  { src: "media/photos/full/photo-012.webp", caption: "goofing around in bed" },
+  { src: "media/photos/full/photo-022.webp", caption: "a pint and some work" },
+  { src: "media/photos/full/photo-028.webp", caption: "cricket and a pint" },
+  { src: "media/photos/full/photo-011.webp", caption: "moonlit on the dock" },
+  { src: "media/photos/full/photo-010.webp", caption: "the mirror kiss" },
+  { src: "media/photos/full/photo-009.webp", caption: "caught mid-look" },
+  { src: "media/photos/full/photo-008.webp", caption: "sunglasses by the harbour" },
+  { src: "media/photos/full/photo-007.webp", caption: "the mural on the corner" },
+  { src: "media/photos/full/photo-006.webp", caption: "down a side street" },
+  { src: "media/photos/full/photo-030.webp", caption: "cheek to cheek" },
+  { src: "media/photos/full/photo-005.webp", caption: "leake street" },
+  { src: "media/photos/full/photo-004.webp", caption: "lunch on the terrace" },
+  { src: "media/photos/full/photo-003.webp", caption: "off again" },
+  { src: "media/photos/full/photo-031.webp", caption: "a toast at sunset" },
+  { src: "media/photos/full/photo-032.webp", caption: "a family photo" },
+  { src: "media/photos/full/photo-033.webp", caption: "by the river" },
+  { src: "media/photos/full/photo-034.webp", caption: "taking in the view" },
+  { src: "media/photos/full/photo-035.webp", caption: "a hug from behind" },
+  { src: "media/photos/full/photo-036.webp", caption: "a silly selfie" },
+  { src: "media/photos/full/photo-037.webp", caption: "the balcony at night" },
+  { src: "media/photos/full/photo-038.webp", caption: "up through the fog" },
+  { src: "media/photos/full/photo-039.webp", caption: "at the gate" },
+  { src: "media/photos/full/photo-040.webp", caption: "sunset by the lake" },
+  { src: "media/photos/full/photo-041.webp", caption: "sunset by the lake" },
+  { src: "media/photos/full/photo-042.webp", caption: "a horse by the coast" },
+  { src: "media/photos/full/photo-043.webp", caption: "by the harbour railings" },
+  { src: "media/photos/full/photo-044.webp", caption: "on the balcony" },
+  { src: "media/photos/full/photo-045.webp", caption: "a childhood costume photo" },
+  { src: "media/photos/full/photo-046.webp", caption: "selfie in the clouds" },
+  { src: "media/photos/full/photo-047.webp", caption: "hands on the console" },
+  { src: "media/photos/full/photo-048.webp", caption: "night above the harbour" },
+  { src: "media/photos/full/photo-049.webp", caption: "meeting a foal" },
+  { src: "media/photos/full/photo-050.webp", caption: "the balcony at night" },
+  { src: "media/photos/full/photo-051.webp", caption: "a kiss in the lift" },
+  { src: "media/photos/full/photo-052.webp", caption: "a childhood teddy bear" },
+  { src: "media/photos/full/photo-053.webp", caption: "the retro seaside cafe" },
+  { src: "media/photos/full/photo-054.webp", caption: "dusk over the bay" },
+  { src: "media/photos/full/photo-055.webp", caption: "a childhood birthday photo" },
+  { src: "media/photos/full/photo-056.webp", caption: "a close, backlit portrait" },
+  { src: "media/photos/full/photo-057.webp", caption: "getting ready, a mirror selfie" },
+  { src: "media/photos/full/photo-058.webp", caption: "the hot tub view" },
+  { src: "media/photos/full/photo-059.webp", caption: "driving through the mountains" },
+  { src: "media/photos/full/photo-060.webp", caption: "vintage radios and a globe" },
+  { src: "media/photos/full/photo-061.webp", caption: "the mountain road" },
+  { src: "media/photos/full/photo-062.webp", caption: "the retro corner" },
+  { src: "media/photos/full/photo-063.webp", caption: "swept off her feet" },
+  { src: "media/photos/full/photo-064.webp", caption: "an old family selfie" },
+  { src: "media/photos/full/photo-065.webp", caption: "together on the balcony" },
+  { src: "media/photos/full/photo-066.webp", caption: "an embrace on the beach" },
+  { src: "media/photos/full/photo-067.webp", caption: "the lake at sunset" },
+  { src: "media/photos/full/photo-068.webp", caption: "a mirror selfie together" },
+  { src: "media/photos/full/photo-069.webp", caption: "the ship cabin" },
+  { src: "media/photos/full/photo-070.webp", caption: "the skyline at dusk" },
+  { src: "media/photos/full/photo-071.webp", caption: "the road ahead" },
+  { src: "media/photos/full/photo-072.webp", caption: "a night out" },
+  { src: "media/photos/full/photo-073.webp", caption: "arrows in the target" },
+  { src: "media/photos/full/photo-074.webp", caption: "this is a pipe" },
+  { src: "media/photos/full/photo-075.webp", caption: "a boat trip" },
+  { src: "media/photos/full/photo-076.webp", caption: "get naked" },
+  { src: "media/photos/full/photo-077.webp", caption: "pointing at the target" },
+  { src: "media/photos/full/photo-078.webp", caption: "on the train" },
+  { src: "media/photos/full/photo-079.webp", caption: "grocery run" },
+  { src: "media/photos/full/photo-080.webp", caption: "arms up at the rink" },
+  { src: "media/photos/full/photo-081.webp", caption: "churros and chocolate" },
+  { src: "media/photos/full/photo-082.webp", caption: "past the london eye" },
+  { src: "media/photos/full/photo-083.webp", caption: "the kitchen floor spill" },
+  { src: "media/photos/full/photo-084.webp", caption: "on the train again" },
+  { src: "media/photos/full/photo-085.webp", caption: "a kiss over dinner" },
+  { src: "media/photos/full/photo-086.webp", caption: "moving in" },
+  { src: "media/photos/full/photo-087.webp", caption: "up too close" },
+  { src: "media/photos/full/photo-088.webp", caption: "golden hour in the field" },
+  { src: "media/photos/full/photo-089.webp", caption: "hot chocolate by the sea" },
+  { src: "media/photos/full/photo-090.webp", caption: "sunglasses and sunshine" },
+  { src: "media/photos/full/photo-091.webp", caption: "rolling out dough" },
+  { src: "media/photos/full/photo-092.webp", caption: "canary wharf at dusk" },
+  { src: "media/photos/full/photo-093.webp", caption: "adjusting an earring" },
+  { src: "media/photos/full/photo-094.webp", caption: "the new tattoo" },
+  { src: "media/photos/full/photo-095.webp", caption: "dinner is ready" },
+  { src: "media/photos/full/photo-096.webp", caption: "holding hands in the car" },
+  { src: "media/photos/full/photo-097.webp", caption: "in red and gold" },
+  { src: "media/photos/full/photo-098.webp", caption: "caught laughing" },
+  { src: "media/photos/full/photo-099.webp", caption: "mountains across the water" },
+  { src: "media/photos/full/photo-100.webp", caption: "sunset by the lake" }
+];
+
+const MEDIA = [
+  { src: "media/photos/full/photo-025.webp", kind: "image", title: "resting on the sofa" },
+  { src: "media/photos/full/photo-023.webp", kind: "image", title: "curled up together" },
+  { src: "media/photos/full/photo-027.webp", kind: "image", title: "an extreme close up" },
+  { src: "media/photos/full/photo-021.webp", kind: "image", title: "late, laughing" },
+  { src: "media/photos/full/photo-020.webp", kind: "image", title: "caught looking away" },
+  { src: "media/photos/full/photo-019.webp", kind: "image", title: "dinner, caught smiling" },
+  { src: "media/photos/full/photo-018.webp", kind: "image", title: "a kiss in the lift" },
+  { src: "media/v01.mp4", kind: "video", title: "a clip i kept" },
+  { src: "media/photos/full/photo-017.webp", kind: "image", title: "smiling for a selfie" },
+  { src: "media/photos/full/photo-016.webp", kind: "image", title: "the white cliffs" },
+  { src: "media/photos/full/photo-015.webp", kind: "image", title: "the view from the tent" },
+  { src: "media/photos/full/photo-014.webp", kind: "image", title: "flowers in her hair" },
+  { src: "media/photos/full/photo-013.webp", kind: "image", title: "dame vera lynn way" },
+  { src: "media/photos/full/photo-029.webp", kind: "image", title: "on the bus" },
+  { src: "media/v02.mp4", kind: "video", title: "mid-sentence, as usual" },
+  { src: "media/photos/full/photo-024.webp", kind: "image", title: "a video call screenshot" },
+  { src: "media/photos/full/photo-002.webp", kind: "image", title: "cambridge, an afternoon" },
+  { src: "media/photos/full/photo-001.webp", kind: "image", title: "a wall by the sea" },
+  { src: "media/photos/full/photo-026.webp", kind: "image", title: "a silhouette at the window" },
+  { src: "media/photos/full/photo-012.webp", kind: "image", title: "goofing around in bed" },
+  { src: "media/photos/full/photo-022.webp", kind: "image", title: "a pint and some work" },
+  { src: "media/v03.mp4", kind: "video", title: "no context, still funny" },
+  { src: "media/photos/full/photo-028.webp", kind: "image", title: "cricket and a pint" },
+  { src: "media/photos/full/photo-011.webp", kind: "image", title: "moonlit on the dock" },
+  { src: "media/photos/full/photo-010.webp", kind: "image", title: "the mirror kiss" },
+  { src: "media/photos/full/photo-009.webp", kind: "image", title: "caught mid-look" },
+  { src: "media/photos/full/photo-008.webp", kind: "image", title: "sunglasses by the harbour" },
+  { src: "media/photos/full/photo-007.webp", kind: "image", title: "the mural on the corner" },
+  { src: "media/v04.mp4", kind: "video", title: "evidence, your honour" },
+  { src: "media/photos/full/photo-006.webp", kind: "image", title: "down a side street" },
+  { src: "media/photos/full/photo-030.webp", kind: "image", title: "cheek to cheek" },
+  { src: "media/photos/full/photo-005.webp", kind: "image", title: "leake street" },
+  { src: "media/photos/full/photo-004.webp", kind: "image", title: "lunch on the terrace" },
+  { src: "media/photos/full/photo-003.webp", kind: "image", title: "off again" },
+  { src: "media/photos/full/photo-031.webp", kind: "image", title: "a toast at sunset" },
+  { src: "media/photos/full/photo-032.webp", kind: "image", title: "a family photo" },
+  { src: "media/photos/full/photo-033.webp", kind: "image", title: "by the river" },
+  { src: "media/photos/full/photo-034.webp", kind: "image", title: "taking in the view" },
+  { src: "media/photos/full/photo-035.webp", kind: "image", title: "a hug from behind" },
+  { src: "media/photos/full/photo-036.webp", kind: "image", title: "a silly selfie" },
+  { src: "media/photos/full/photo-037.webp", kind: "image", title: "the balcony at night" },
+  { src: "media/photos/full/photo-038.webp", kind: "image", title: "up through the fog" },
+  { src: "media/photos/full/photo-039.webp", kind: "image", title: "at the gate" },
+  { src: "media/photos/full/photo-040.webp", kind: "image", title: "sunset by the lake" },
+  { src: "media/photos/full/photo-041.webp", kind: "image", title: "sunset by the lake" },
+  { src: "media/photos/full/photo-042.webp", kind: "image", title: "a horse by the coast" },
+  { src: "media/photos/full/photo-043.webp", kind: "image", title: "by the harbour railings" },
+  { src: "media/photos/full/photo-044.webp", kind: "image", title: "on the balcony" },
+  { src: "media/photos/full/photo-045.webp", kind: "image", title: "a childhood costume photo" },
+  { src: "media/photos/full/photo-046.webp", kind: "image", title: "selfie in the clouds" },
+  { src: "media/photos/full/photo-047.webp", kind: "image", title: "hands on the console" },
+  { src: "media/photos/full/photo-048.webp", kind: "image", title: "night above the harbour" },
+  { src: "media/photos/full/photo-049.webp", kind: "image", title: "meeting a foal" },
+  { src: "media/photos/full/photo-050.webp", kind: "image", title: "the balcony at night" },
+  { src: "media/photos/full/photo-051.webp", kind: "image", title: "a kiss in the lift" },
+  { src: "media/photos/full/photo-052.webp", kind: "image", title: "a childhood teddy bear" },
+  { src: "media/photos/full/photo-053.webp", kind: "image", title: "the retro seaside cafe" },
+  { src: "media/photos/full/photo-054.webp", kind: "image", title: "dusk over the bay" },
+  { src: "media/photos/full/photo-055.webp", kind: "image", title: "a childhood birthday photo" },
+  { src: "media/photos/full/photo-056.webp", kind: "image", title: "a close, backlit portrait" },
+  { src: "media/photos/full/photo-057.webp", kind: "image", title: "getting ready, a mirror selfie" },
+  { src: "media/photos/full/photo-058.webp", kind: "image", title: "the hot tub view" },
+  { src: "media/photos/full/photo-059.webp", kind: "image", title: "driving through the mountains" },
+  { src: "media/photos/full/photo-060.webp", kind: "image", title: "vintage radios and a globe" },
+  { src: "media/photos/full/photo-061.webp", kind: "image", title: "the mountain road" },
+  { src: "media/photos/full/photo-062.webp", kind: "image", title: "the retro corner" },
+  { src: "media/photos/full/photo-063.webp", kind: "image", title: "swept off her feet" },
+  { src: "media/photos/full/photo-064.webp", kind: "image", title: "an old family selfie" },
+  { src: "media/photos/full/photo-065.webp", kind: "image", title: "together on the balcony" },
+  { src: "media/photos/full/photo-066.webp", kind: "image", title: "an embrace on the beach" },
+  { src: "media/photos/full/photo-067.webp", kind: "image", title: "the lake at sunset" },
+  { src: "media/photos/full/photo-068.webp", kind: "image", title: "a mirror selfie together" },
+  { src: "media/photos/full/photo-069.webp", kind: "image", title: "the ship cabin" },
+  { src: "media/photos/full/photo-070.webp", kind: "image", title: "the skyline at dusk" },
+  { src: "media/photos/full/photo-071.webp", kind: "image", title: "the road ahead" },
+  { src: "media/photos/full/photo-072.webp", kind: "image", title: "a night out" },
+  { src: "media/photos/full/photo-073.webp", kind: "image", title: "arrows in the target" },
+  { src: "media/photos/full/photo-074.webp", kind: "image", title: "this is a pipe" },
+  { src: "media/photos/full/photo-075.webp", kind: "image", title: "a boat trip" },
+  { src: "media/photos/full/photo-076.webp", kind: "image", title: "get naked" },
+  { src: "media/photos/full/photo-077.webp", kind: "image", title: "pointing at the target" },
+  { src: "media/photos/full/photo-078.webp", kind: "image", title: "on the train" },
+  { src: "media/photos/full/photo-079.webp", kind: "image", title: "grocery run" },
+  { src: "media/photos/full/photo-080.webp", kind: "image", title: "arms up at the rink" },
+  { src: "media/photos/full/photo-081.webp", kind: "image", title: "churros and chocolate" },
+  { src: "media/photos/full/photo-082.webp", kind: "image", title: "past the london eye" },
+  { src: "media/photos/full/photo-083.webp", kind: "image", title: "the kitchen floor spill" },
+  { src: "media/photos/full/photo-084.webp", kind: "image", title: "on the train again" },
+  { src: "media/photos/full/photo-085.webp", kind: "image", title: "a kiss over dinner" },
+  { src: "media/photos/full/photo-086.webp", kind: "image", title: "moving in" },
+  { src: "media/photos/full/photo-087.webp", kind: "image", title: "up too close" },
+  { src: "media/photos/full/photo-088.webp", kind: "image", title: "golden hour in the field" },
+  { src: "media/photos/full/photo-089.webp", kind: "image", title: "hot chocolate by the sea" },
+  { src: "media/photos/full/photo-090.webp", kind: "image", title: "sunglasses and sunshine" },
+  { src: "media/photos/full/photo-091.webp", kind: "image", title: "rolling out dough" },
+  { src: "media/photos/full/photo-092.webp", kind: "image", title: "canary wharf at dusk" },
+  { src: "media/photos/full/photo-093.webp", kind: "image", title: "adjusting an earring" },
+  { src: "media/photos/full/photo-094.webp", kind: "image", title: "the new tattoo" },
+  { src: "media/photos/full/photo-095.webp", kind: "image", title: "dinner is ready" },
+  { src: "media/photos/full/photo-096.webp", kind: "image", title: "holding hands in the car" },
+  { src: "media/photos/full/photo-097.webp", kind: "image", title: "in red and gold" },
+  { src: "media/photos/full/photo-098.webp", kind: "image", title: "caught laughing" },
+  { src: "media/photos/full/photo-099.webp", kind: "image", title: "mountains across the water" },
+  { src: "media/photos/full/photo-100.webp", kind: "image", title: "sunset by the lake" }
+];
+
+const SNARK = [
+  'nothing here is in order. wander.',
+  'sorted by vibes. exclusively by vibes.',
+  'no filing system. we tried. we failed. we moved on.',
+  'chronology is a construct. keep scrolling.',
+  'curated by someone with zero qualifications and full commitment.',
+  'some of these are unflattering. that is the point.',
+  'the algorithm here is: whatever i felt like.',
+  'nobody asked for a timeline, so nobody got one.',
+  'yes, there are four of the same pose. no, i will not delete any.',
+  'this wall has better memory than both of us.',
+  'if you find a bad photo of you, congratulations, it is fake.',
+  'archived with the care of a raccoon and the taste of a poet.',
+  'search function: your eyes.',
+  'i will not be taking questions about the ordering.',
+  'still adding. this will never be finished.'
+];
+
+const MEMORIES = [
+  { id: 'm1', title: 'the very beginning', date: 'when it all started', location: 'somewhere that became home', mood: 'golden', photo: 'media/p01.jpg',
+    description: "This is where it started, and mujhe pata bhi nahi chala kab. I just knew I didn't want the conversation to end." },
+  { id: 'm2', title: 'the laugh', date: 'a random tuesday', location: 'you', mood: 'laughing', photo: 'media/p02.jpg',
+    description: "That laugh. I'd build entire days just to hear it twice." },
+  { id: 'm3', title: 'hands', date: "someone's evening", location: 'a walk home', mood: 'soft', photo: 'media/p03.jpg',
+    description: 'The smallest map of us, redrawn every time your hand finds mine.' },
+  { id: 'm4', title: 'the table for two', date: 'a friday', location: 'the little caf\u00e9', mood: 'golden', photo: 'media/p04.jpg',
+    description: 'Two things off the menu, zero regrets, and somehow still not enough time with you.' },
+  { id: 'm5', title: "the dreamers' plan", date: 'last month', location: 'our corner', mood: 'home', photo: 'media/p12.jpg',
+    description: "We made a list of every place we'd go. Ek din, hum wahi list jee lenge." }
+];
+
+const KEPT_NOTES = [
+  { id: 'n1', title: 'for the bad days', date: '12 aug', html: '<p>read this one when the day has been long and nothing has gone right. i wrote it on a good day, on purpose, so you would have it on a bad one.</p>' },
+  { id: 'n2', title: 'things you said in your sleep', date: '03 jul', html: '<p>an incomplete transcript. mostly nonsense. one of them was my name, which i am choosing to take personally.</p>' },
+  { id: 'n3', title: 'the list', date: '02 jun', html: '<p>every place we said we would go. no dates against any of them yet \u2014 ek din, hum wahi list jee lenge.</p>' }
+];
+
+// one palette, shared by the pen and the brush. `color` is the swatch and the
+// stroke; `text` is the on-paper ink; `glow` is the neon halo for both.
+const INKS = [
+  { id: 'plain', name: 'plain', color: '#2a2932', stroke: '#d3d0da', text: '#d3d0da', glow: 'none' },
+  { id: 'violet', name: 'violet', color: '#6645f5', stroke: '#8f74ff', text: '#cfc4ff', glow: '0 0 10px rgba(102,69,245,.75), 0 0 26px rgba(102,69,245,.4)' },
+  { id: 'teal', name: 'teal', color: '#2fa8c0', stroke: '#48d3ef', text: '#bfeaf3', glow: '0 0 10px rgba(47,168,192,.75), 0 0 26px rgba(47,168,192,.38)' },
+  { id: 'orchid', name: 'orchid', color: '#af45f5', stroke: '#d07bff', text: '#e8c6ff', glow: '0 0 10px rgba(175,69,245,.75), 0 0 26px rgba(175,69,245,.4)' },
+  { id: 'rose', name: 'rose', color: '#f5457f', stroke: '#ff77a4', text: '#ffc8db', glow: '0 0 10px rgba(245,69,127,.75), 0 0 26px rgba(245,69,127,.4)' },
+  { id: 'amber', name: 'amber', color: '#f5a445', stroke: '#ffc477', text: '#ffe3bd', glow: '0 0 10px rgba(245,164,69,.72), 0 0 26px rgba(245,164,69,.38)' },
+  { id: 'lime', name: 'lime', color: '#8ff545', stroke: '#b4ff7a', text: '#ddffc1', glow: '0 0 10px rgba(143,245,69,.7), 0 0 26px rgba(143,245,69,.36)' },
+  { id: 'ice', name: 'ice', color: '#eef1ff', stroke: '#ffffff', text: '#f4f5ff', glow: '0 0 10px rgba(238,241,255,.6), 0 0 24px rgba(238,241,255,.3)' }
+];
+
+// The clue toll. Asking for help is never free — each request opens an
+// interrogation that has to be paid and verified before the clue unseals.
+const TOLLS = [
+  { ask: 'before the clue: would you rather fight one horse-sized duck, or a hundred duck-sized horses? three seconds.', after: 'interesting. that answer tells me more about you than your cv ever could.' },
+  { ask: 'before the clue: what is the most suspiciously innocent sentence a person could say?', after: 'perfect. you\u2019re the killer. clue released anyway.' },
+  { ask: 'before the clue: we\u2019re both being chased, and i trip. are you helping me, or buying yourself twelve seconds?', after: 'noted. i\u2019m updating your file either way.' },
+  { ask: 'before the clue: pick one \u2014 your most irrational fear, your worst habit, or the last thing you googled.', after: 'excellent. the investigation can continue.' },
+  { ask: 'before the clue: you have thirty seconds to convince me you wouldn\u2019t be the first to die in a horror film.', after: 'barely convincing. i\u2019ll allow it.' },
+  { ask: 'before the clue: choose a weapon \u2014 exceptional intelligence, supernatural charisma, or always knowing when someone is lying.', after: 'now explain why you didn\u2019t choose mine. later. clue first.' },
+  { ask: 'before the clue: what\u2019s your villain origin story?', after: 'i knew it. the face gave it away.' },
+  { ask: 'before the clue: something about you that sounds made up but is actually true.', after: 'filed under: reasons this case took so long.' }
+];
+
+// The wall talks back. Each whisper has follow-ups that fire in order, so the
+// same button gets funnier the more she presses it.
+const WHISPERS = [
+  {
+    text: 'a compatibility test. you name a fictional character you find attractive, i name mine. if either of us picks a psychopath, we both have to explain ourselves.',
+    follow: ['you went first. that was brave.', 'i\u2019m not saying my pick was better. i\u2019m saying mine had a redemption arc.', 'we\u2019re both explaining ourselves, aren\u2019t we.']
+  },
+  {
+    text: 'two truths and a lie, but make them increasingly concerning. i\u2019ll go first.',
+    follow: ['i once drove four hours for a sandwich. i can sleep through anything except your voice. i have never once won an argument with you.', 'the lie is the third one. i win sometimes. rarely. quietly.', 'your turn. make it worse than mine.']
+  },
+  {
+    text: 'you get one question to determine whether i\u2019m boyfriend material or the beginning of a netflix documentary. choose carefully.',
+    follow: ['that\u2019s the question you went with? bold.', 'for the record, the documentary would be very well reviewed.', 'you\u2019d be interviewed in soft lighting saying i seemed normal.']
+  },
+  {
+    text: 'if someone told you \u201cdon\u2019t worry, everything is going to be fine\u201d \u2014 how worried are you, one to ten?',
+    follow: ['correct answer: forty-seven.', 'anything under thirty and i don\u2019t believe you\u2019ve met me.', 'we are, for what it\u2019s worth, going to be fine.']
+  },
+  {
+    text: 'you wake up in a room with me, a knife, a phone at 3%, and no memory of how you got here. what\u2019s your first question?',
+    follow: ['excellent. mine was going to be \u201cwhy are you holding the knife?\u201d', 'we\u2019d survive. you\u2019d ration the battery, i\u2019d narrate.', 'plot twist: it\u2019s a kitchen. we were making dinner.']
+  },
+  {
+    text: 'would you rather know exactly how you\u2019ll die, or exactly when?',
+    follow: ['and more importantly, why did you choose that? i\u2019m collecting evidence.', 'i\u2019d pick neither and then think about it every night for a year.', 'either way i\u2019d like to be in the room. badly timed, i know.']
+  },
+  {
+    text: 'i\u2019m going to make a prediction about you. you\u2019re going to disagree, then accidentally prove me right.',
+    follow: ['see, this is the part where you disagree.', 'and there it is.', 'i\u2019ll stop. i\u2019ve made my point and one enemy.']
+  },
+  {
+    text: 'let\u2019s play psychological profiling. three questions each. loser buys drinks.',
+    follow: ['excellent. you\u2019ve already made your first mistake.', 'you answered too quickly. that\u2019s two.', 'i\u2019ll take mine with ice. and an apology.']
+  }
+];
+
+const plainText = (html) => String(html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+const countWords = (html) => { const t = plainText(html); return t ? t.split(' ').length : 0; };
+const shortDate = () => new Date().toLocaleDateString(undefined, { day: '2-digit', month: 'short' }).toLowerCase();
+
+const STAGES = [
+  {
+    label: 'i \u2014 the summons',
+    lead: 'a curious mind is a dangerous thing.',
+    body: 'four clues. one secret.\nnothing here is quite what it seems.\nproceed, detective.',
+    ask: 'shall we begin?',
+    answers: null,
+    hints: [],
+    gate: 'the file is sealed. it does not open for free.'
+  },
+  {
+    label: 'ii \u2014 the first observation',
+    lead: 'the greatest clue is the thing you see every day and never truly see.',
+    body: 'i have crossed borders without moving an inch.\ni have carried fragments of one world into another.\ni am opened with purpose,\nthen forgotten when the feast is done.',
+    ask: 'what am i?',
+    answers: ['suitcase', 'thesuitcase', 'suitcases', 'luggage', 'bag', 'trolley', 'trolleybag'],
+    hints: ['it travelled with someone who loves you.', 'it has wheels, a zip, and no manners at the airport.'],
+    gate: 'correct. the next page is sealed shut, and paper was not what sealed it.'
+  },
+  {
+    label: 'iii \u2014 the second observation',
+    lead: 'holmes looked at what others overlook.',
+    body: 'read the beginnings, not the endings.\n\nSometimes we search too far.\nNothing hidden is truly invisible.\nA thing may sit before thy very eyes.\nCareless eyes see only what they expect.\nKeep thy attention upon the ordinary.\nSeek what once carried a taste of home.',
+    ask: 'what word have you uncovered?',
+    answers: ['snacks', 'snack'],
+    hints: ['ignore the sentences. look at how each one starts.', 'six lines. six letters. read downwards.'],
+    gate: 'logged. the seal on the next page is, once again, not paper.'
+  },
+  {
+    label: 'iv \u2014 the third observation',
+    lead: 'a detective does not always need a cipher. sometimes he merely needs to remember.',
+    body: 'i once contained a little treasure.\nwe found it only after forgetting it existed.\nit was sweet, round, and gone within a week.\n\nCH _ _ O    P _ _',
+    ask: 'fill in what is missing.',
+    answers: ['chocopie', 'chocopies', 'chocopye'],
+    hints: ['five letters, then three.', 'it did not survive the week. neither did my share of it.'],
+    gate: 'noted, and slightly resented. one more seal.'
+  },
+  {
+    label: 'v \u2014 the final deduction',
+    lead: 'now connect the evidence.',
+    body: 'SNACKS.\nCHOCO PIE.\nA JOURNEY FROM INDIA.\nsomething that carried them all.\n\ndo not search the kitchen.\ndo not search the cupboard.\nthink of the traveller that brought the feast home.',
+    ask: 'what object connects every clue?',
+    answers: ['suitcase', 'thesuitcase', 'suitcases', 'luggage', 'bag', 'trolley', 'trolleybag'],
+    hints: ['nothing in this file was bought. all of it was carried.', 'it stood half-unpacked in a corner for a week.'],
+    gate: 'the case is closed. seal it one last time.'
+  }
+];
+
+const RECEIPTS = [
+  { line: 'authenticated against the sample on file. match: 100%.', fine: 'note: examiner may have run the test twice. for accuracy.' },
+  { line: 'lab reports the specimen as dangerously good.', fine: 'chain of custody: intact. examiner: compromised.' },
+  { line: 'verified. suspiciously well practised.', fine: 'flagged for repeat testing at the earliest opportunity.' },
+  { line: 'cross-referenced twice. once for evidence, once for me.', fine: 'the second one was not strictly necessary.' },
+  { line: 'conclusive. the department of us confirms receipt.', fine: 'filed under: reasons this case took so long.' }
+];
+
+const WRONG = ['not it, detective. read it again.', 'a confident no.', 'close enough to be annoying. not close enough.', 'the file disagrees.'];
+
+const norm = (v) => String(v || '').toLowerCase().replace(/[^a-z]/g, '');
+
+// Stamps in the passport. `next` is the one we haven't been to yet — it sits
+// in the rail at half opacity, still loading.
+// Flags are images, not emoji — emoji flags fall back to bare letter pairs on
+// Windows, so the rail would read "IN GB AL" instead of showing flags.
+const FLAG = (id) => 'https://flagcdn.com/w80/' + id + '.png';
+
+const COUNTRIES = [
+  { id: 'in', flag: '\uD83C\uDDEE\uD83C\uDDF3', name: 'india' },
+  { id: 'gb', flag: '\uD83C\uDDEC\uD83C\uDDE7', name: 'united kingdom' },
+  { id: 'al', flag: '\uD83C\uDDE6\uD83C\uDDF1', name: 'albania' },
+  { id: 'me', flag: '\uD83C\uDDF2\uD83C\uDDEA', name: 'montenegro' },
+  { id: 'ie', flag: '\uD83C\uDDEE\uD83C\uDDEA', name: 'ireland' },
+  { id: 'fr', flag: '\uD83C\uDDEB\uD83C\uDDF7', name: 'france' },
+  { id: 'it', flag: '\uD83C\uDDEE\uD83C\uDDF9', name: 'italy' },
+  { id: 'es', flag: '\uD83C\uDDEA\uD83C\uDDF8', name: 'spain' },
+  { id: 'pt', flag: '\uD83C\uDDF5\uD83C\uDDF9', name: 'portugal' },
+  { id: 'gr', flag: '\uD83C\uDDEC\uD83C\uDDF7', name: 'greece' },
+  { id: 'hr', flag: '\uD83C\uDDED\uD83C\uDDF7', name: 'croatia' },
+  { id: 'nl', flag: '\uD83C\uDDF3\uD83C\uDDF1', name: 'netherlands' },
+  { id: 'be', flag: '\uD83C\uDDE7\uD83C\uDDEA', name: 'belgium' },
+  { id: 'de', flag: '\uD83C\uDDE9\uD83C\uDDEA', name: 'germany' },
+  { id: 'at', flag: '\uD83C\uDDE6\uD83C\uDDF9', name: 'austria' },
+  { id: 'ch', flag: '\uD83C\uDDE8\uD83C\uDDED', name: 'switzerland' },
+  { id: 'cz', flag: '\uD83C\uDDE8\uD83C\uDDFF', name: 'czechia' },
+  { id: 'hu', flag: '\uD83C\uDDED\uD83C\uDDFA', name: 'hungary' },
+  { id: 'pl', flag: '\uD83C\uDDF5\uD83C\uDDF1', name: 'poland' },
+  { id: 'no', flag: '\uD83C\uDDF3\uD83C\uDDF4', name: 'norway' },
+  { id: 'se', flag: '\uD83C\uDDF8\uD83C\uDDEA', name: 'sweden' },
+  { id: 'dk', flag: '\uD83C\uDDE9\uD83C\uDDF0', name: 'denmark' },
+  { id: 'is', flag: '\uD83C\uDDEE\uD83C\uDDF8', name: 'iceland' },
+  { id: 'tr', flag: '\uD83C\uDDF9\uD83C\uDDF7', name: 't\u00fcrkiye' },
+  { id: 'ae', flag: '\uD83C\uDDE6\uD83C\uDDEA', name: 'uae' },
+  { id: 'th', flag: '\uD83C\uDDF9\uD83C\uDDED', name: 'thailand' },
+  { id: 'jp', flag: '\uD83C\uDDEF\uD83C\uDDF5', name: 'japan' },
+  { id: 'sg', flag: '\uD83C\uDDF8\uD83C\uDDEC', name: 'singapore' },
+  { id: 'lk', flag: '\uD83C\uDDF1\uD83C\uDDF0', name: 'sri lanka' },
+  { id: 'np', flag: '\uD83C\uDDF3\uD83C\uDDF5', name: 'nepal' },
+  { id: 'us', flag: '\uD83C\uDDFA\uD83C\uDDF8', name: 'united states' },
+  { id: 'ca', flag: '\uD83C\uDDE8\uD83C\uDDE6', name: 'canada' },
+  { id: 'mx', flag: '\uD83C\uDDF2\uD83C\uDDFD', name: 'mexico' },
+  { id: 'br', flag: '\uD83C\uDDE7\uD83C\uDDF7', name: 'brazil' },
+  { id: 'ar', flag: '\uD83C\uDDE6\uD83C\uDDF7', name: 'argentina' },
+  { id: 'au', flag: '\uD83C\uDDE6\uD83C\uDDFA', name: 'australia' },
+  { id: 'nz', flag: '\uD83C\uDDF3\uD83C\uDDFF', name: 'new zealand' },
+  { id: 'za', flag: '\uD83C\uDDFF\uD83C\uDDE6', name: 'south africa' },
+  { id: 'ma', flag: '\uD83C\uDDF2\uD83C\uDDE6', name: 'morocco' },
+  { id: 'eg', flag: '\uD83C\uDDEA\uD83C\uDDEC', name: 'egypt' }
+];
+
+// Swap this for the playlist link and the player picks it up. Spotify's embed
+// owns playback and the track list — the chrome around it is ours.
+const SPOTIFY_ID = '7Mb4FGvrQAudgOQAWC6nBj';
+const SPOTIFY_EMBED = 'https://open.spotify.com/embed/playlist/' + SPOTIFY_ID + '?theme=0';
+
+const STARS = ['i', '\u2764', 'k', 'r', 'i', 'p', 'i'];
+const ACCENT = ['#8d7ce8', '#5f9fae', '#a05fd6', '#8d7ce8', '#5f9fae'];
+
+// Local persistence: keeps the notebook, media uploads, and case/door
+// progress across refreshes on THIS device (no shared backend yet \u2014 that's
+// a follow-up once Drive/Firebase are wired in). localStorage only, so
+// anything that fails here (quota, private-mode) is swallowed rather than
+// breaking the page.
+const PERSIST_KEY = 'olw:state:v1';
+function loadPersisted() {
+  try {
+    const raw = localStorage.getItem(PERSIST_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) { return null; }
+}
+function savePersisted(slice) {
+  try { localStorage.setItem(PERSIST_KEY, JSON.stringify(slice)); } catch (_) {}
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: 'entrance',
+    collapsed: false,
+    note: NOTES[1],
+    moonTaps: 0,
+    secretOpen: false,
+    doorFound: false,
+    visited: ['in', 'gb', 'al', 'me'],
+    nextUp: 'ie',
+    passportOpen: false,
+    playerOpen: false,
+    activeId: null,
+    showWhisper: false,
+    uploads: [],
+    snark: 0,
+    activeNote: 'n1',
+    notes: KEPT_NOTES,
+    search: '',
+    keptOpen: true,
+    winW: 1440,
+    ink: 'plain',
+    full: false,
+    mode: 'write',
+    brush: 3,
+    tool: 'pen',
+    saved: 'idle',
+    wallOpen: false,
+    viewer: -1,
+    vidRatio: 0,
+    natW: 0,
+    natH: 0,
+    frameW: 0,
+    frameH: 0,
+    zoom: 0,
+    whisper: 0,
+    whisperStep: -1,
+    clueGate: false,
+    clueKissed: false,
+    clueConfirmed: false,
+    lit: 0,
+    stage: 0,
+    answer: '',
+    hint: -1,
+    stageSolved: false,
+    kissed: false,
+    confirmed: false,
+    verdict: '',
+    verdictOk: false,
+    caseClosed: false,
+    missing: null,
+    smile: null,
+    toast: null
+  };
+
+  componentDidMount() {
+    const persisted = loadPersisted();
+    if (persisted) {
+      this.setState({
+        doorFound: !!persisted.doorFound,
+        secretOpen: !!persisted.secretOpen,
+        moonTaps: persisted.moonTaps || 0,
+        lit: persisted.lit || 0,
+        stage: persisted.stage || 0,
+        stageSolved: !!persisted.stageSolved,
+        caseClosed: !!persisted.caseClosed,
+        notes: Array.isArray(persisted.notes) && persisted.notes.length ? persisted.notes : KEPT_NOTES,
+        activeNote: persisted.activeNote || 'n1',
+        uploads: Array.isArray(persisted.uploads) ? persisted.uploads : []
+      });
+    }
+    this.setState({ note: NOTES[Math.floor(Math.random() * NOTES.length)] });
+    this._onWin = () => {
+      if (Math.abs(window.innerWidth - this.state.winW) > 4) {
+        this.setState({ winW: window.innerWidth });
+      }
+    };
+    window.addEventListener('resize', this._onWin);
+    this._onWin();
+    this._keys = (e) => {
+      if (e.key === 'Escape' && this.state.activeId) this.setState({ activeId: null });
+      else if (e.key === 'Escape' && this.state.passportOpen) this.setState({ passportOpen: false });
+      else if (e.key === 'Escape' && this.state.viewer >= 0) this.setState({ viewer: -1 });
+      else if (e.key === 'Escape' && this.state.full) this.setState({ full: false });
+      if (this.state.viewer >= 0) {
+        if (e.key === 'ArrowRight') this.stepViewer(1);
+        if (e.key === 'ArrowLeft') this.stepViewer(-1);
+      }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        this.syncEditor();
+        this.setState({ saved: 'saved' });
+        this.toast('kept. it\u2019s ours now.');
+      }
+    };
+    window.addEventListener('keydown', this._keys);
+  }
+
+  // the ref fires once per mount, so stepping between videos syncs here
+  componentDidUpdate() {
+    const s = this.state;
+    const item = s.viewer >= 0 ? MEDIA.concat(s.uploads)[s.viewer] : null;
+    if (this._vid && item && item.kind === 'video' && this._vid.getAttribute('src') !== item.src) {
+      this._vid.src = item.src;
+    }
+    clearTimeout(this._persistT);
+    this._persistT = setTimeout(() => {
+      savePersisted({
+        doorFound: s.doorFound, secretOpen: s.secretOpen, moonTaps: s.moonTaps, lit: s.lit,
+        stage: s.stage, stageSolved: s.stageSolved, caseClosed: s.caseClosed,
+        notes: s.notes, activeNote: s.activeNote, uploads: s.uploads
+      });
+    }, 400);
+  }
+
+  componentWillUnmount() {
+    if (this._t) clearTimeout(this._t);
+    if (this._wordT) clearTimeout(this._wordT);
+    if (this._persistT) clearTimeout(this._persistT);
+    if (this._keys) window.removeEventListener('keydown', this._keys);
+    if (this._ccFit) window.removeEventListener('resize', this._ccFit);
+    if (this._ccRaf) cancelAnimationFrame(this._ccRaf);
+    if (this._ro) this._ro.disconnect();
+  }
+
+  // The editor is uncontrolled on purpose: contentEditable + a React-controlled
+  // innerHTML fights the caret on every keystroke. So the DOM owns the html
+  // while typing and we pull it into state on a debounce.
+  syncEditor() {
+    if (!this._editor) return;
+    const html = this._editor.innerHTML;
+    this.setState(prev => ({
+      saved: 'saved',
+      notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { html }) : n))
+    }));
+  }
+
+  exec(cmd, arg) {
+    if (this._editor) this._editor.focus();
+    try { document.execCommand(cmd, false, arg); } catch (_) {}
+    this.syncEditor();
+  }
+
+  openNote(id) {
+    if (id === this.state.activeNote) return;
+    if (this.state.mode === 'write') this.syncEditor(); else this.saveDoodle();
+    const next = this.state.notes.find(n => n.id === id);
+    if (this._editor) this._editor.innerHTML = (next && next.html) || '';
+    if (this._canvas) {
+      const r = this._canvas.getBoundingClientRect();
+      this._canvas.getContext('2d').clearRect(0, 0, r.width, r.height);
+    }
+    this.setState({ activeNote: id, saved: 'saved' }, () => {
+      if (this.state.mode === 'draw') this.loadDoodle();
+    });
+  }
+
+  newNote() {
+    this.syncEditor();
+    const id = 'n' + Date.now();
+    const page = { id, title: '', date: shortDate(), html: '', doodle: null };
+    if (this._editor) this._editor.innerHTML = '';
+    if (this._canvas) {
+      const r = this._canvas.getBoundingClientRect();
+      this._canvas.getContext('2d').clearRect(0, 0, r.width, r.height);
+    }
+    this.setState(prev => ({
+      notes: [page].concat(prev.notes), activeNote: id, saved: 'idle', search: ''
+    }), () => { if (this._editor) this._editor.focus(); });
+    this.toast('a clean page. go on.');
+  }
+
+  deleteNote() {
+    const s = this.state;
+    if (s.notes.length <= 1) { this.toast('the last page stays. someone has to hold the pen.'); return; }
+    const rest = s.notes.filter(n => n.id !== s.activeNote);
+    const next = rest[0];
+    if (this._editor) this._editor.innerHTML = (next && next.html) || '';
+    this.setState({ notes: rest, activeNote: next.id, saved: 'saved' });
+    this.toast('torn out. i won\u2019t ask what it said.');
+  }
+
+  exportNote() {
+    if (this.state.mode === 'write') this.syncEditor(); else this.saveDoodle();
+    const s = this.state;
+    const note = s.notes.find(n => n.id === s.activeNote);
+    if (!note) return;
+    const doodle = (this.state.mode === 'draw' && this._canvas)
+      ? this._canvas.toDataURL('image/png')
+      : note.doodle;
+    const html = ((this._editor && this._editor.innerHTML) || note.html || '')
+      + (doodle ? '<img src="' + doodle + '" alt="doodle">' : '');
+    const title = note.title || 'untitled';
+    const doc = '<!doctype html><meta charset="utf-8"><title>' + title + '</title>'
+      + '<style>body{margin:0;padding:64px 24px;background:#050507;color:#d3d0da;'
+      + 'font:300 19px/36px Ranade,ui-sans-serif,system-ui,sans-serif}'
+      + 'main{max-width:64ch;margin:0 auto}h1{font-weight:700;font-size:34px;letter-spacing:-.03em;color:#f1eff6;margin:0 0 6px}'
+      + 'p.d{margin:0 0 40px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#5d5a66}'
+      + 'img{max-width:100%;border-radius:12px;margin:18px 0}blockquote{margin:22px 0;padding-left:20px;'
+      + 'border-left:1px solid rgba(255,255,255,.14);font-style:italic;color:#a09ca9}</style>'
+      + '<main><h1>' + title + '</h1><p class="d">' + note.date + ' \u00b7 our little world</p>' + html + '</main>';
+    const url = URL.createObjectURL(new Blob([doc], { type: 'text/html' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    this.toast('exported. keep it somewhere safe.');
+  }
+
+  insertFile(file) {
+    if (!file || file.type.indexOf('image') !== 0) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.exec('insertHTML',
+        '<img src="' + reader.result + '" style="display:block;max-width:100%;margin:20px 0;'
+        + 'border-radius:12px;box-shadow:0 20px 44px -26px rgba(0,0,0,1)">');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── the wall viewer ──
+  // Tiles live in the wall's shadow DOM, so opening one rides a composed
+  // CustomEvent out to this wrapper rather than a React handler on the tile.
+  mountWall(el) {
+    if (!el || el._wired) return;
+    el._wired = true;
+    el.addEventListener('tile-open', (e) => {
+      const i = e.detail && e.detail.index;
+      if (typeof i === 'number' && i >= 0) this.openItem(i);
+    });
+  }
+
+  stepViewer(d) {
+    const all = MEDIA.concat(this.state.uploads);
+    if (!all.length) return;
+    // every item re-measures from scratch, and zoom returns to fit
+    this.setState(prev => ({
+      viewer: (prev.viewer + d + all.length) % all.length,
+      natW: 0, natH: 0, zoom: 0, vidRatio: 0
+    }));
+  }
+
+  // The frame's live box is measured, because the displayed size is computed in
+  // real pixels rather than delegated to object-fit — which is what kept
+  // cropping portrait video.
+  mountFrame(el) {
+    this._frame = el;
+    if (!el || el._wired) return;
+    el._wired = true;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      if (Math.abs(r.width - this.state.frameW) > 1 || Math.abs(r.height - this.state.frameH) > 1) {
+        this.setState({ frameW: r.width, frameH: r.height });
+      }
+    };
+    measure();
+    if (window.ResizeObserver) {
+      this._fro = new ResizeObserver(measure);
+      this._fro.observe(el);
+    }
+  }
+
+  openItem(i) {
+    this.setState({ viewer: i, natW: 0, natH: 0, zoom: 0, vidRatio: 0 });
+  }
+
+  setZoom(z) {
+    this.setState({ zoom: Math.max(0.1, Math.min(6, z)) });
+  }
+
+  // ── confetti ──
+  // One canvas, one rAF loop that only runs while something is airborne. The
+  // burst starts as a hard blast off the top edge, then the slow fall follows.
+  mountConfetti(el) {
+    this._cc = el;
+    if (!el || el._wired) return;
+    el._wired = true;
+    this._bits = [];
+    const fit = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      el.width = Math.round(window.innerWidth * dpr);
+      el.height = Math.round(window.innerHeight * dpr);
+      const c = el.getContext('2d');
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.scale(dpr, dpr);
+      this._ccw = window.innerWidth;
+      this._cch = window.innerHeight;
+    };
+    fit();
+    this._ccFit = fit;
+    window.addEventListener('resize', fit);
+  }
+
+  blast() {
+    const el = this._cc;
+    if (!el) return;
+    const W = this._ccw || window.innerWidth;
+    const PAL = [
+      { c: '#d9b45a', hi: '#f7e6a8', glit: 1 },   // gold
+      { c: '#c6cbd6', hi: '#ffffff', glit: 1 },   // silver
+      { c: '#4b3bd6', hi: '#8f7cff', glit: 0 },   // ultramarine purple
+      { c: '#7b1e33', hi: '#e0708c', glit: 1 }    // maroon, glittering
+    ];
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const pal = () => PAL[Math.floor(Math.random() * PAL.length)];
+    const now = performance.now();
+    const bits = this._bits || (this._bits = []);
+
+    // the blast: a hard cone off the top edge
+    for (let i = 0; i < 90; i++) {
+      const a = rnd(Math.PI * 0.18, Math.PI * 0.82);
+      const sp = rnd(9, 21);
+      const p = pal();
+      bits.push({
+        kind: 'flake', born: now, life: rnd(2600, 3400),
+        x: rnd(W * 0.28, W * 0.72), y: rnd(-30, 4),
+        vx: Math.cos(a) * sp * rnd(0.5, 1) * (Math.random() < 0.5 ? -1 : 1),
+        vy: Math.sin(a) * sp,
+        w: rnd(5, 13), h: rnd(7, 17), rot: rnd(0, 6.28), spin: rnd(-0.3, 0.3),
+        flut: rnd(0, 6.28), col: p.c, hi: p.hi, glit: p.glit
+      });
+    }
+    // the fall: staggered so it arrives after the blast
+    for (let i = 0; i < 130; i++) {
+      const p = pal();
+      bits.push({
+        kind: 'flake', born: now + rnd(120, 900), life: rnd(2400, 3200),
+        x: rnd(0, W), y: rnd(-140, -20),
+        vx: rnd(-1.6, 1.6), vy: rnd(2, 5.5),
+        w: rnd(4, 11), h: rnd(6, 15), rot: rnd(0, 6.28), spin: rnd(-0.22, 0.22),
+        flut: rnd(0, 6.28), col: p.c, hi: p.hi, glit: p.glit
+      });
+    }
+    // satin ribbons: long, slow, and they sway
+    for (let i = 0; i < 16; i++) {
+      const p = pal();
+      bits.push({
+        kind: 'ribbon', born: now + rnd(0, 700), life: rnd(2800, 3600),
+        x: rnd(0, W), y: rnd(-180, -40),
+        vx: rnd(-1.2, 1.2), vy: rnd(1.6, 3.4),
+        len: rnd(70, 160), wid: rnd(5, 10),
+        rot: rnd(-0.5, 0.5), spin: rnd(-0.05, 0.05),
+        flut: rnd(0, 6.28), amp: rnd(9, 22), col: p.c, hi: p.hi
+      });
+    }
+    if (!this._ccRun) this.runConfetti();
+  }
+
+  runConfetti() {
+    const el = this._cc;
+    if (!el) return;
+    this._ccRun = true;
+    const ctx = el.getContext('2d');
+    const step = (t) => {
+      const W = this._ccw || window.innerWidth, H = this._cch || window.innerHeight;
+      ctx.clearRect(0, 0, W, H);
+      const live = [];
+      for (const b of this._bits) {
+        if (t < b.born) { live.push(b); continue; }
+        const age = t - b.born;
+        if (age > b.life) continue;
+        // last 900ms fades out; nothing lingers past ~3.5s
+        const fade = age > b.life - 900 ? Math.max(0, (b.life - age) / 900) : 1;
+        b.vy += b.kind === 'ribbon' ? 0.055 : 0.13;
+        b.vx *= 0.992;
+        b.vy = Math.min(b.vy, b.kind === 'ribbon' ? 5.5 : 11);
+        b.flut += b.kind === 'ribbon' ? 0.09 : 0.22;
+        b.x += b.vx + Math.sin(b.flut) * (b.kind === 'ribbon' ? 0.9 : 0.5);
+        b.y += b.vy;
+        b.rot += b.spin;
+        if (b.y > H + 220) continue;
+        ctx.save();
+        ctx.globalAlpha = fade;
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+        if (b.kind === 'ribbon') {
+          // a curved strip with a moving sheen band reads as satin
+          const g = ctx.createLinearGradient(0, -b.len / 2, 0, b.len / 2);
+          g.addColorStop(0, b.col);
+          g.addColorStop(Math.min(0.85, Math.max(0.15, 0.5 + Math.sin(b.flut) * 0.32)), b.hi);
+          g.addColorStop(1, b.col);
+          ctx.strokeStyle = g;
+          ctx.lineWidth = b.wid;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(0, -b.len / 2);
+          ctx.bezierCurveTo(
+            Math.sin(b.flut) * b.amp, -b.len / 6,
+            -Math.sin(b.flut + 1) * b.amp, b.len / 6,
+            Math.sin(b.flut + 2) * b.amp * 0.6, b.len / 2
+          );
+          ctx.stroke();
+        } else {
+          // flutter = horizontal squash, so flakes turn edge-on as they fall
+          const sx = Math.cos(b.flut);
+          ctx.scale(Math.max(0.15, Math.abs(sx)), 1);
+          const g = ctx.createLinearGradient(-b.w / 2, -b.h / 2, b.w / 2, b.h / 2);
+          g.addColorStop(0, b.col);
+          g.addColorStop(0.5, sx > 0 ? b.hi : b.col);
+          g.addColorStop(1, b.col);
+          ctx.fillStyle = g;
+          ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+          if (b.glit && Math.random() < 0.22) {
+            ctx.fillStyle = 'rgba(255,255,255,.9)';
+            ctx.fillRect(-b.w / 4, -b.h / 4, 1.6, 1.6);
+          }
+        }
+        ctx.restore();
+        live.push(b);
+      }
+      this._bits = live;
+      if (live.length) this._ccRaf = requestAnimationFrame(step);
+      else {
+        this._ccRun = false;
+        ctx.clearRect(0, 0, W, H);
+      }
+    };
+    this._ccRaf = requestAnimationFrame(step);
+  }
+
+  // ── the doodle canvas ──
+  // The bitmap is sized to its box once and kept as a dataURL on the note, so
+  // switching pages or modes never loses a stroke.
+  mountCanvas(el) {
+    this._canvas = el;
+    if (!el || el._wired) return;
+    el._wired = true;
+    const fit = () => {
+      const r = el.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const prev = el.width ? el.toDataURL() : null;
+      el.width = Math.max(1, Math.round(r.width * dpr));
+      el.height = Math.max(1, Math.round(r.height * dpr));
+      const ctx = el.getContext('2d');
+      ctx.scale(dpr, dpr);
+      if (prev) { const i = new Image(); i.onload = () => ctx.drawImage(i, 0, 0, r.width, r.height); i.src = prev; }
+      else this.loadDoodle();
+    };
+    fit();
+    if (window.ResizeObserver) {
+      this._ro = new ResizeObserver(() => fit());
+      this._ro.observe(el);
+    }
+    let drawing = false;
+    const pos = (e) => {
+      const r = el.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+    const ctx = () => el.getContext('2d');
+    el.addEventListener('pointerdown', (e) => {
+      drawing = true;
+      el.setPointerCapture(e.pointerId);
+      const c = ctx(), p = pos(e), k = INKS.find(i => i.id === this.state.ink) || INKS[0];
+      const erasing = this.state.tool === 'eraser';
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      // the eraser is the same stroke punching a hole instead of laying ink,
+      // and it runs wider because a precise eraser is a useless one
+      c.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
+      c.lineWidth = erasing ? this.state.brush * 4 + 6 : this.state.brush;
+      c.strokeStyle = erasing ? 'rgba(0,0,0,1)' : k.stroke;
+      c.shadowColor = erasing || k.id === 'plain' ? 'transparent' : k.color;
+      c.shadowBlur = erasing || k.id === 'plain' ? 0 : this.state.brush * 4;
+      c.beginPath();
+      c.moveTo(p.x, p.y);
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
+      const c = ctx(), p = pos(e);
+      c.lineTo(p.x, p.y);
+      c.stroke();
+      // stroking twice lays the glow over itself — that's what makes it neon
+      if (c.shadowBlur) c.stroke();
+    });
+    const stop = () => {
+      if (!drawing) return;
+      drawing = false;
+      this.saveDoodle();
+    };
+    el.addEventListener('pointerup', stop);
+    el.addEventListener('pointerleave', stop);
+    el.addEventListener('pointercancel', stop);
+  }
+
+  loadDoodle() {
+    const s = this.state;
+    const note = s.notes.find(n => n.id === s.activeNote);
+    const el = this._canvas;
+    if (!el || !note || !note.doodle) return;
+    const r = el.getBoundingClientRect();
+    const img = new Image();
+    img.onload = () => el.getContext('2d').drawImage(img, 0, 0, r.width, r.height);
+    img.src = note.doodle;
+  }
+
+  saveDoodle() {
+    if (!this._canvas) return;
+    // a fully erased sheet stores nothing, so the kept badge stops saying
+    // "doodle" for a page that no longer has one
+    let empty = false;
+    try {
+      const c = this._canvas.getContext('2d');
+      const px = c.getImageData(0, 0, this._canvas.width, this._canvas.height).data;
+      empty = true;
+      for (let i = 3; i < px.length; i += 4) { if (px[i] !== 0) { empty = false; break; } }
+    } catch (_) {}
+    const data = empty ? null : this._canvas.toDataURL('image/png');
+    this.setState(prev => ({
+      saved: 'saved',
+      notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { doodle: data }) : n))
+    }));
+  }
+
+  clearDoodle() {
+    const el = this._canvas;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.getContext('2d').clearRect(0, 0, r.width, r.height);
+    this.setState(prev => ({
+      notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { doodle: null }) : n))
+    }));
+    this.toast('wiped. pretend it never happened.');
+  }
+
+  setMode(mode) {
+    if (mode === this.state.mode) return;
+    if (this.state.mode === 'write') this.syncEditor();
+    else this.saveDoodle();
+    this.setState({ mode }, () => { if (mode === 'draw') setTimeout(() => this.loadDoodle(), 40); });
+  }
+
+  handlePaste(e) {
+    const items = Array.from((e.clipboardData && e.clipboardData.items) || []);
+    const img = items.find(i => i.type.indexOf('image') === 0);
+    if (img) {
+      e.preventDefault();
+      this.insertFile(img.getAsFile());
+      return;
+    }
+    e.preventDefault();
+    const text = e.clipboardData ? e.clipboardData.getData('text/plain') : '';
+    if (text) this.exec('insertText', text);
+  }
+
+  // The moon and the constellation are exactly the things people tap fast, so
+  // both the count AND the unlock it triggers are derived inside one pure
+  // functional update. Reading `state.moonTaps + 1` off a render closure
+  // undercounts every tap that lands before React re-renders, which would
+  // quietly seal the only route into the secret room and the case.
+  tapMoon() {
+    this.setState(
+      st => (st.moonTaps + 1 >= 7 && !st.secretOpen
+        ? { moonTaps: st.moonTaps + 1, secretOpen: true }
+        : { moonTaps: st.moonTaps + 1 }),
+      () => {
+        const n = this.state.moonTaps;
+        if (n === 7) this.toast('something gave way.');
+        else if (n === 3) this.toast('curious, are we?');
+        else if (n === 6) this.toast('almost.');
+      }
+    );
+  }
+
+  tapStar() {
+    this.setState(
+      st => (st.lit + 1 >= 3 && !st.doorFound
+        ? { lit: st.lit + 1, doorFound: true, secretOpen: true }
+        : { lit: st.lit + 1 }),
+      () => { if (this.state.lit === 3) this.toast('i \u2764 kripi'); }
+    );
+  }
+
+  toast(msg) {
+    this.setState({ toast: msg });
+    if (this._t) clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 3400);
+  }
+
+  checkAnswer() {
+    const st = STAGES[this.state.stage];
+    if (!st.answers) return;
+    const given = norm(this.state.answer);
+    if (!given) { this.setState({ verdict: 'the page is blank, detective.', verdictOk: false }); return; }
+    if (st.answers.indexOf(given) !== -1) {
+      this.setState({ stageSolved: true, verdict: 'correct. logged.', verdictOk: true });
+      this.toast('evidence accepted.');
+    } else {
+      this.setState({ verdict: WRONG[Math.floor(Math.random() * WRONG.length)], verdictOk: false });
+    }
+  }
+
+  pick(list, exclude) {
+    let v = list[Math.floor(Math.random() * list.length)];
+    if (list.length > 1) while (v === exclude) v = list[Math.floor(Math.random() * list.length)];
+    return v;
+  }
+
+  go(screen) { this.setState({ screen }); }
+
+  renderVals() {
+    const s = this.state;
+    const on = (k) => s.screen === k;
+    const chrome = s.screen !== 'entrance';
+    const railOut = s.collapsed || !chrome;
+    const active = MEMORIES.find(m => m.id === s.activeId) || null;
+    const st = STAGES[s.stage];
+    const needsAnswer = !!st.answers && !s.stageSolved;
+    const gateOpen = !st.answers || s.stageSolved;
+    const hintsLeft = s.hint < st.hints.length - 1;
+    const receipt = RECEIPTS[s.stage % RECEIPTS.length];
+    const media = MEDIA.concat(s.uploads);
+    const activeNote = s.notes.find(n => n.id === s.activeNote) || s.notes[0] || null;
+    const words = countWords(activeNote ? activeNote.html : '');
+    const q = s.search.trim().toLowerCase();
+    const visibleNotes = q
+      ? s.notes.filter(n => ((n.title || '') + ' ' + plainText(n.html)).toLowerCase().indexOf(q) !== -1)
+      : s.notes;
+    const ink = INKS.find(k => k.id === s.ink) || INKS[0];
+    const whisper = WHISPERS[s.whisper % WHISPERS.length];
+    const toll = TOLLS[(s.stage * 2 + Math.max(0, s.hint + 1)) % TOLLS.length];
+    const nextCountry = s.visited.indexOf(s.nextUp) === -1
+      ? COUNTRIES.find(c => c.id === s.nextUp)
+      : null;
+    const shown = s.viewer >= 0 ? media[s.viewer] : null;
+    const portrait = s.vidRatio > 0 && s.vidRatio < 1;
+    // rail (304) + page gutter (~46) + panel (338) + a pad that's still worth
+    // writing in (560) — under that, reserving the column crushes the pad
+    const railW = railOut ? 68 : 304;
+    const reserveKept = s.keptOpen && (s.winW - railW - 46 - 338) >= 560;
+    // "fit" (zoom 0) never scales past 100% — original size is the ceiling
+    const fitScale = (s.natW && s.frameW)
+      ? Math.min(s.frameW / s.natW, s.frameH / s.natH, 1)
+      : 1;
+    const scale = s.zoom > 0 ? s.zoom : fitScale;
+    const vids = media.filter(m => m.kind === 'video').length;
+    const pics = media.length - vids;
+
+    const tab = (k) => ({
+      bg: on(k) ? 'rgba(255,255,255,.045)' : 'transparent',
+      color: on(k) ? '#f1eff6' : '#7c7987',
+      dot: on(k) ? '#8d7ce8' : 'transparent'
+    });
+    const h = tab('home'), u = tab('us'), me = tab('memories'),
+          nb = tab('notebook'), lt = tab('little'), cs = tab('case');
+
+    return {
+      bgOpacity: chrome ? 0.2 : 0.5,
+
+      railTransform: railOut ? 'translateX(-104%)' : 'translateX(0)',
+      railOpacity: railOut ? 0 : 1,
+      railEvents: railOut ? 'none' : 'auto',
+      toggleLeft: s.collapsed ? '22px' : '286px',
+      toggleOpacity: chrome ? 1 : 0,
+      toggleEvents: chrome ? 'auto' : 'none',
+      caretRotate: s.collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
+      contentPad: railOut ? 'clamp(24px,5vw,64px)' : '304px',
+      contentTop: chrome ? '76px' : '0px',
+      toggleRail: () => this.setState(st => ({ collapsed: !st.collapsed })),
+
+      // ── the player ──
+      // Collapsed it's the quiet status line it always was; expanded it grows
+      // into the playlist itself, where songs are actually changed.
+      playerOpen: s.playerOpen,
+      togglePlayer: () => this.setState(prev => ({ playerOpen: !prev.playerOpen })),
+      playerLabel: s.playerOpen ? 'our playlist' : 'our song, on repeat',
+      playerCaret: s.playerOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+      // only mounted while open, so nothing plays or preloads otherwise; the
+      // src goes on through the ref, never as a hole (an unresolved hole in src
+      // gets fetched verbatim)
+      playerMounted: s.playerOpen,
+      playerRef: (el) => { if (el && !el.src) el.src = SPOTIFY_EMBED; },
+
+      homeBg: h.bg, homeColor: h.color, homeDot: h.dot,
+      usBg: u.bg, usColor: u.color, usDot: u.dot,
+      memBg: me.bg, memColor: me.color, memDot: me.dot,
+      nbBg: nb.bg, nbColor: nb.color, nbDot: nb.dot,
+      ltBg: lt.bg, ltColor: lt.color, ltDot: lt.dot,
+      csBg: cs.bg, csColor: cs.color, csDot: cs.dot,
+
+      isEntrance: on('entrance'),
+      isHome: on('home'),
+      isUs: on('us'),
+      isMemories: on('memories'),
+      isNotebook: on('notebook'),
+      isLittle: on('little'),
+      isSecret: on('secret'),
+      isCase: on('case') && s.doorFound,
+      isCaseLocked: on('case') && !s.doorFound,
+
+      goEntrance: () => this.go('entrance'),
+      goHome: () => this.go('home'),
+      goUs: () => this.go('us'),
+      goMemories: () => this.go('memories'),
+      goNotebook: () => this.go('notebook'),
+      goLittle: () => this.go('little'),
+      goCase: () => this.go('case'),
+      goSecret: () => this.go('secret'),
+
+      // our room
+      greeting: 'welcome back',
+      note: s.note,
+      dateLabel: new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toLowerCase(),
+      // ── the passport rail ──
+      // Visited stamps in order, then the one we're going to next at half
+      // opacity, quietly loading. Five fit; the rest scroll.
+      stamps: s.visited
+        .map(id => COUNTRIES.find(c => c.id === id))
+        .filter(Boolean)
+        .map(c => ({ src: 'url("' + FLAG(c.id) + '")', name: c.name, opacity: 1, anim: 'none' }))
+        .concat(nextCountry ? [{
+          src: 'url("' + FLAG(nextCountry.id) + '")',
+          name: nextCountry.name + ' \u00b7 next',
+          opacity: 0.34,
+          anim: 'olwPending 2.8s ease-in-out infinite'
+        }] : []),
+      stampCount: s.visited.length + (s.visited.length === 1 ? ' country' : ' countries'),
+      passportOpen: s.passportOpen,
+      togglePassport: () => this.setState(prev => ({ passportOpen: !prev.passportOpen })),
+      allCountries: COUNTRIES.map(c => {
+        const has = s.visited.indexOf(c.id) !== -1;
+        const isNext = s.nextUp === c.id;
+        return {
+          src: 'url("' + FLAG(c.id) + '")',
+          name: c.name,
+          bg: has ? 'rgba(141,124,232,.12)' : 'rgba(255,255,255,.02)',
+          border: '1px solid ' + (has ? 'rgba(141,124,232,.38)' : 'rgba(255,255,255,.055)'),
+          color: has ? '#e8e6ee' : '#7c7987',
+          mark: has ? 'been' : isNext ? 'next' : 'add',
+          markColor: has ? '#8d7ce8' : isNext ? '#5f9fae' : '#454250',
+          toggle: () => this.setState(prev => ({
+            visited: prev.visited.indexOf(c.id) !== -1
+              ? prev.visited.filter(v => v !== c.id)
+              : prev.visited.concat([c.id])
+          }))
+        };
+      }),
+      lastKept: 'for the bad days',
+      moonLine: s.secretOpen
+        ? 'you were right to be curious. it opened.'
+        : 'it sits in the corner of this room doing nothing in particular. probably.',
+      secretOpen: s.secretOpen,
+      tapMoon: () => this.tapMoon(),
+
+      // us
+      mediaCount: media.length + (media.length === 1 ? ' piece' : ' pieces'),
+      mediaJson: JSON.stringify(media),
+      mediaBreakdown: pics + (pics === 1 ? ' photo' : ' photos') + ' · ' + vids + (vids === 1 ? ' video' : ' videos')
+        + (s.uploads.length ? ' · ' + s.uploads.length + ' added by you' : '')
+        + ' · hover a tile to bring it forward',
+      wallHeight: s.wallOpen ? 'min(320vh,2600px)' : 'min(70vh,620px)',
+      wallColumns: s.wallOpen ? '7' : '5',
+      wallLabel: s.wallOpen ? 'collapse the wall' : 'see all ' + media.length,
+      wallCaret: s.wallOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+      wallRef: (el) => this.mountWall(el),
+
+      // ── the viewer ──
+      viewerOpen: s.viewer >= 0,
+      viewerIsVideo: !!(shown && shown.kind === 'video'),
+      viewerIsImage: !!(shown && shown.kind !== 'video'),
+      // Sources are assigned through refs, never as template holes: an
+      // unresolved hole in src is fetched verbatim and 404s.
+      videoRef: (el) => {
+        this._vid = el;
+        if (!el) return;
+        if (!el._sized) {
+          el._sized = true;
+          el.addEventListener('loadedmetadata', () => {
+            if (el.videoWidth && el.videoHeight) {
+              this.setState({
+                natW: el.videoWidth, natH: el.videoHeight,
+                vidRatio: el.videoWidth / el.videoHeight
+              });
+            }
+            // Opening came from a click, so sound is usually permitted here —
+            // and if the browser refuses, fall back to muted rather than a
+            // video that silently never starts.
+            el.muted = false;
+            const p = el.play();
+            if (p && p.catch) p.catch(() => { el.muted = true; el.play().catch(() => {}); });
+          });
+        }
+        if (shown && el.getAttribute('src') !== shown.src) el.src = shown.src;
+      },
+      imgRef: (el) => {
+        this._img = el;
+        if (!el) return;
+        if (!el._sized) {
+          el._sized = true;
+          el.addEventListener('load', () => {
+            if (el.naturalWidth && el.naturalHeight) {
+              this.setState({
+                natW: el.naturalWidth, natH: el.naturalHeight,
+                vidRatio: el.naturalWidth / el.naturalHeight
+              });
+            }
+          });
+        }
+        if (shown && el.getAttribute('src') !== shown.src) el.src = shown.src;
+      },
+
+      // ── zoom ──
+      // The media is laid out at an explicit pixel size: natural dimensions
+      // times the scale. No object-fit, so nothing can crop it.
+      frameRef: (el) => this.mountFrame(el),
+      mediaW: s.natW ? Math.round(s.natW * scale) + 'px' : 'auto',
+      mediaH: s.natH ? Math.round(s.natH * scale) + 'px' : 'auto',
+      zoomLabel: s.natW ? Math.round(scale * 100) + '%' : '\u2014',
+      zoomIn: () => this.setZoom(scale + 0.25),
+      zoomOut: () => this.setZoom(scale - 0.25),
+      zoomFit: () => this.setState({ zoom: 0 }),
+      zoomActual: () => this.setState({ zoom: 1 }),
+      fitBg: s.zoom === 0 ? 'rgba(255,255,255,.07)' : 'transparent',
+      fitColor: s.zoom === 0 ? '#e8e6ee' : '#7c7987',
+      actualBg: s.zoom === 1 ? 'rgba(255,255,255,.07)' : 'transparent',
+      actualColor: s.zoom === 1 ? '#e8e6ee' : '#7c7987',
+      naturalSize: s.natW ? s.natW + ' \u00d7 ' + s.natH : 'measuring\u2026',
+      viewerTitle: shown ? (shown.title || 'untitled') : '',
+      viewerMeta: shown
+        ? (shown.kind === 'video'
+            ? 'video' + (s.vidRatio ? ' \u00b7 ' + (portrait ? 'portrait' : 'landscape') : '')
+            : 'photo')
+          + ' \u00b7 ' + (s.viewer + 1) + ' of ' + media.length
+        : '',
+      closeViewer: () => this.setState({ viewer: -1 }),
+      prevItem: () => this.stepViewer(-1),
+      nextItem: () => this.stepViewer(1),
+      strip: media.map((m, i) => ({
+        bg: m.kind === 'video' ? 'none' : 'url("' + m.src + '")',
+        isVideo: m.kind === 'video',
+        border: '1px solid ' + (i === s.viewer ? 'rgba(141,124,232,.75)' : 'rgba(255,255,255,.07)'),
+        opacity: i === s.viewer ? 1 : 0.45,
+        jump: () => this.openItem(i)
+      })),
+      toggleWall: () => this.setState(prev => ({ wallOpen: !prev.wallOpen })),
+      snark: SNARK[s.snark % SNARK.length],
+      snarkAnim: (s.snark % 2 ? 'olwSnarkB' : 'olwSnarkA') + ' .42s cubic-bezier(.22,1,.36,1) both',
+      nextSnark: () => this.setState(prev => ({ snark: prev.snark + 1 })),
+      addMedia: (e) => {
+        const files = Array.from((e.target && e.target.files) || []);
+        if (!files.length) return;
+        const added = files.map(f => ({
+          src: URL.createObjectURL(f),
+          kind: f.type.indexOf('video') === 0 ? 'video' : 'image',
+          title: f.name.replace(/\.[^.]+$/, '')
+        }));
+        e.target.value = '';
+        this.setState(prev => ({ uploads: prev.uploads.concat(added) }));
+        this.toast(added.length === 1 ? 'added to the wall.' : added.length + ' more for the wall.');
+      },
+
+      // memories
+      memories: MEMORIES.map((m, i) => ({
+        title: m.title, bg: 'url("' + m.photo + '")', short: m.description,
+        meta: m.mood + ' \u00b7 ' + m.date,
+        moodColor: ACCENT[i % ACCENT.length],
+        open: () => this.setState({ activeId: m.id })
+      })),
+      activeMemory: active ? {
+        title: active.title, location: active.location, bg: 'url("' + active.photo + '")',
+        description: active.description, meta: active.mood + ' \u00b7 ' + active.date
+      } : null,
+      closeMemory: () => this.setState({ activeId: null }),
+      stop: (e) => e.stopPropagation(),
+      showWhisper: s.showWhisper,
+      whisperLabel: s.showWhisper ? 'close the wall' : 'there might be a whisper in the wall\u2026',
+      toggleWhisper: () => this.setState(st => ({ showWhisper: !st.showWhisper, whisperStep: -1 })),
+      whisperText: whisper.text,
+      whisperReplies: whisper.follow.slice(0, Math.max(0, s.whisperStep + 1)).map((t, i) => ({
+        text: t,
+        color: i % 2 ? '#8d8a96' : '#a09ca9'
+      })),
+      whisperMore: s.whisperStep < whisper.follow.length - 1,
+      whisperMoreLabel: s.whisperStep < 0 ? 'answer it' : 'and then?',
+      pressWhisper: () => this.setState(prev => ({ whisperStep: prev.whisperStep + 1 })),
+      nextWhisper: () => this.setState(prev => ({
+        whisper: (prev.whisper + 1) % WHISPERS.length, whisperStep: -1
+      })),
+      whisperIndex: (s.whisper + 1) + ' of ' + WHISPERS.length,
+      whispers: WHISPERS,
+
+      // ── the notebook ──
+      noteTitle: activeNote ? activeNote.title : '',
+      noteStat: words + (words === 1 ? ' word' : ' words') + ' \u00b7 ' + s.notes.length + ' pages kept',
+      readTime: words ? 'about ' + Math.max(1, Math.round(words / 200)) + ' min to read' : 'a blank page is also a message',
+      saveLabel: s.saved === 'saved' ? 'kept' : s.saved === 'saving' ? 'writing' : 'unsaved',
+      saveColor: s.saved === 'saved' ? '#5f9fae' : s.saved === 'saving' ? '#8d7ce8' : '#4a4753',
+
+      padChrome: s.full ? 0 : 1,
+      padRadius: s.full ? '0px' : '22px',
+      padPosition: s.full ? 'fixed' : 'relative',
+      padInset: s.full ? '0' : 'auto',
+      padZ: s.full ? 70 : 'auto',
+      padPadding: s.full ? 'clamp(24px,4vw,54px)' : '26px',
+      // fullscreen: the pad's own box fills the viewport and the page inside
+      // takes the leftover height, so the ruled paper reaches the bottom.
+      padMinHeight: s.full ? '0' : '620px',
+      padHeight: s.full ? '100vh' : 'auto',
+      // The kept panel is a fixed 300px column on the right. Reserve that band
+      // only when the pad can still hold a usable width afterwards — below that
+      // the panel overlays instead, with a backdrop to dismiss it.
+      padMargin: reserveKept
+        ? (s.full ? '0 338px 0 0' : '30px 338px 0 0')
+        : (s.full ? '0' : '30px 0 0'),
+      keptScrim: s.keptOpen && !reserveKept,
+      // olwUp leaves a transform on the section for its whole life, which would
+      // make the section the containing block for the fixed pad. Drop the whole
+      // shorthand in fullscreen — a running animation can't be out-declared.
+      padAnim: s.full ? 'none' : 'olwUp .6s cubic-bezier(.22,1,.36,1) both',
+      toggleFull: () => this.setState(prev => ({ full: !prev.full })),
+
+      inks: INKS.map(k => ({
+        name: k.name,
+        pick: () => this.setState({ ink: k.id }),
+        swatch: k.id === 'plain' ? 'linear-gradient(180deg,#2a2932,#141319)' : k.color,
+        border: '1px solid ' + (s.ink === k.id ? 'rgba(255,255,255,.55)' : 'rgba(255,255,255,.1)'),
+        ring: s.ink === k.id && k.id !== 'plain' ? '0 0 12px 1px ' + k.color : 'none'
+      })),
+      inkColor: ink.text,
+      inkGlow: ink.glow,
+      neonLabel: ink.id === 'plain' ? 'plain ink' : ink.name + ' neon',
+
+      // ── write / draw ──
+      isWrite: s.mode === 'write',
+      isDraw: s.mode === 'draw',
+      writeBg: s.mode === 'write' ? 'rgba(255,255,255,.06)' : 'transparent',
+      writeColor: s.mode === 'write' ? '#e8e6ee' : '#7c7987',
+      drawBg: s.mode === 'draw' ? 'rgba(255,255,255,.06)' : 'transparent',
+      drawColor: s.mode === 'draw' ? '#e8e6ee' : '#7c7987',
+      goWrite: () => this.setMode('write'),
+      goDraw: () => this.setMode('draw'),
+      canvasRef: (el) => this.mountCanvas(el),
+      confettiRef: (el) => this.mountConfetti(el),
+      blast: () => this.blast(),
+      canvasCursor: 'crosshair',
+      brushes: [2, 4, 8, 16].map(w => ({
+        size: w + 'px',
+        dot: Math.min(16, 4 + w * 0.7) + 'px',
+        bg: s.brush === w ? ink.stroke : '#3a3844',
+        glow: s.brush === w && ink.id !== 'plain' ? '0 0 10px ' + ink.color : 'none',
+        pick: () => this.setState({ brush: w })
+      })),
+      clearDraw: () => this.clearDoodle(),
+      penBg: s.tool === 'pen' ? 'rgba(255,255,255,.06)' : 'transparent',
+      penColor: s.tool === 'pen' ? '#e8e6ee' : '#7c7987',
+      eraserBg: s.tool === 'eraser' ? 'rgba(255,255,255,.06)' : 'transparent',
+      eraserColor: s.tool === 'eraser' ? '#e8e6ee' : '#7c7987',
+      pickPen: () => this.setState({ tool: 'pen' }),
+      pickEraser: () => this.setState({ tool: 'eraser' }),
+      drawCursor: s.tool === 'eraser' ? 'cell' : 'crosshair',
+      inkRowOpacity: s.tool === 'eraser' && s.mode === 'draw' ? 0.35 : 1,
+
+      editorRef: (el) => { this._editor = el; if (el && !el._seeded) { el._seeded = true; el.innerHTML = (activeNote && activeNote.html) || ''; } },
+      fileRef: (el) => { this._file = el; },
+      onEdit: () => {
+        if (this._wordT) clearTimeout(this._wordT);
+        if (this.state.saved !== 'saving') this.setState({ saved: 'saving' });
+        this._wordT = setTimeout(() => this.syncEditor(), 400);
+      },
+      onPaste: (e) => this.handlePaste(e),
+      pickImage: () => { if (this._file) this._file.click(); },
+      insertImage: (e) => {
+        const files = Array.from((e.target && e.target.files) || []);
+        e.target.value = '';
+        files.forEach(f => this.insertFile(f));
+      },
+      doBold: () => this.exec('bold'),
+      doItalic: () => this.exec('italic'),
+      doUnderline: () => this.exec('underline'),
+      doHeading: () => this.exec('formatBlock', '<h2>'),
+      doQuote: () => this.exec('formatBlock', '<blockquote>'),
+      doList: () => this.exec('insertUnorderedList'),
+      doRule: () => this.exec('insertHTML', '<hr style="border:none;border-top:1px solid rgba(255,255,255,.12);margin:26px 0">'),
+
+      keptOpen: s.keptOpen,
+      keptClosed: !s.keptOpen,
+      keptCount: s.notes.length,
+      toggleKept: () => this.setState(prev => ({ keptOpen: !prev.keptOpen })),
+      search: s.search,
+      typeSearch: (e) => this.setState({ search: e.target.value }),
+      noResults: visibleNotes.length === 0,
+      notes: visibleNotes.map(n => ({
+        title: n.title || 'untitled',
+        date: n.date,
+        // the badge tells her at a glance which pages hold drawings
+        kind: n.doodle && plainText(n.html) ? 'both' : n.doodle ? 'doodle' : 'text',
+        kindColor: n.doodle && plainText(n.html) ? '#af45f5' : n.doodle ? '#2fa8c0' : '#6a6773',
+        excerpt: plainText(n.html).slice(0, 46) || (n.doodle ? 'a drawing' : 'empty'),
+        bg: s.activeNote === n.id ? 'rgba(255,255,255,.05)' : 'transparent',
+        color: s.activeNote === n.id ? '#e8e6ee' : '#8b8896',
+        open: () => this.openNote(n.id)
+      })),
+      typeTitle: (e) => {
+        const v = e.target.value;
+        this.setState(prev => ({
+          saved: 'saving',
+          notes: prev.notes.map(n => (n.id === prev.activeNote ? Object.assign({}, n, { title: v }) : n))
+        }));
+      },
+      newNote: () => this.newNote(),
+      keepNote: () => { this.syncEditor(); this.setState({ saved: 'saved' }); this.toast('kept. it\u2019s ours now.'); },
+      exportNote: () => this.exportNote(),
+      deleteNote: () => this.deleteNote(),
+
+      // little things
+      daily: 'the pink sweatshirt is steadily losing your smell. so are my arms.',
+      missing: s.missing,
+      smile: s.smile,
+      missMe: () => this.setState({ missing: this.pick(MISSING_ME, s.missing) }),
+      smileMe: () => this.setState({ smile: this.pick(SMILE, s.smile) }),
+      favourites: PHOTOS.slice(0, 6).map(p => ({ bg: 'url("' + p.src + '")' })),
+
+      // the case
+      doorFound: s.doorFound,
+      caseProgress: s.caseClosed ? 'closed' : 'stage ' + (s.stage + 1) + ' of ' + STAGES.length,
+      caseClosed: s.caseClosed,
+      stageDots: STAGES.map((_, i) => ({
+        bg: i < s.stage || s.caseClosed ? '#5f9fae' : i === s.stage ? '#8d7ce8' : 'rgba(255,255,255,.07)'
+      })),
+      stage: {
+        label: st.label,
+        lead: st.lead,
+        body: st.body,
+        ask: st.ask,
+        needsAnswer,
+        hintShown: s.hint >= 0,
+        hintLabel: 'clue ' + (s.hint + 1) + ' of ' + st.hints.length,
+        hintText: st.hints[s.hint] || ''
+      },
+      answerValue: s.answer,
+      clueLabel: hintsLeft ? 'ask for a clue' : 'no clues left',
+      typeAnswer: (e) => this.setState({ answer: e.target.value }),
+      answerKey: (e) => { if (e.key === 'Enter') this.checkAnswer(); },
+      submitAnswer: () => this.checkAnswer(),
+      askClue: () => {
+        if (!hintsLeft) { this.toast('that is all i am giving you.'); return; }
+        if (s.clueGate) return;
+        this.setState({ clueGate: true, clueKissed: false, clueConfirmed: false });
+        this.toast('a clue has a price, detective.');
+      },
+      verdict: s.verdict,
+      verdictColor: s.verdictOk ? '#5f9fae' : '#a05fd6',
+
+      // ── the clue toll ──
+      // A clue is never handed over. Asking opens an interrogation, the
+      // installment gets paid, it gets verified, and only then does it unseal.
+      clueGateVisible: s.clueGate,
+      tollAsk: toll.ask,
+      tollAfter: toll.after,
+      tollLine: s.clueConfirmed
+        ? toll.after
+        : s.clueKissed
+          ? 'installment received. unverified. procedure is procedure.'
+          : toll.ask,
+      tollKissLabel: s.clueKissed ? 'installment received' : 'pay the installment',
+      tollKissOpacity: s.clueKissed ? 0.45 : 1,
+      tollKissEvents: s.clueKissed ? 'none' : 'auto',
+      tollConfirmOpacity: !s.clueKissed || s.clueConfirmed ? 0.35 : 1,
+      tollConfirmEvents: s.clueKissed && !s.clueConfirmed ? 'auto' : 'none',
+      payToll: () => { this.setState({ clueKissed: true }); this.toast('logged. still not verified.'); },
+      verifyToll: () => { this.setState({ clueConfirmed: true }); this.toast('verified. the clue is unsealing.'); },
+      tollReleaseVisible: s.clueConfirmed,
+      releaseClue: () => this.setState(prev => ({
+        hint: prev.hint + 1, clueGate: false, clueKissed: false, clueConfirmed: false
+      })),
+      cancelToll: () => this.setState({ clueGate: false, clueKissed: false, clueConfirmed: false }),
+
+      gateVisible: gateOpen && !s.caseClosed,
+      gateLine: s.confirmed
+        ? 'verified. the page will open now.'
+        : s.kissed
+          ? 'one kiss, submitted. it still needs verifying \u2014 procedure is procedure.'
+          : st.gate,
+      kissLabel: s.kissed ? 'kiss received' : 'seal it with a kiss',
+      kissOpacity: s.kissed ? 0.45 : 1,
+      kissEvents: s.kissed ? 'none' : 'auto',
+      confirmOpacity: !s.kissed || s.confirmed ? 0.35 : 1,
+      confirmEvents: s.kissed && !s.confirmed ? 'auto' : 'none',
+      giveKiss: () => { this.setState({ kissed: true }); this.toast('logged as evidence.'); },
+      confirmKiss: () => { this.setState({ confirmed: true }); this.toast('verified. reluctantly professional about it.'); },
+      receiptVisible: s.confirmed,
+      receiptRef: 'exhibit ' + String(s.stage + 1).padStart(2, '0') + '-k',
+      receiptLine: receipt.line,
+      receiptFine: receipt.fine,
+      nextVisible: s.confirmed,
+      nextLabel: s.stage === STAGES.length - 1 ? 'close the case' : 'open the next clue',
+      nextStage: () => {
+        if (s.stage === STAGES.length - 1) {
+          this.setState({ caseClosed: true });
+          this.toast('case closed. you were always going to solve it.');
+          return;
+        }
+        this.setState(prev => ({
+          stage: prev.stage + 1, answer: '', hint: -1,
+          stageSolved: false, kissed: false, confirmed: false, verdict: '', verdictOk: false,
+          clueGate: false, clueKissed: false, clueConfirmed: false
+        }));
+      },
+      resetCase: () => this.setState({
+        stage: 0, answer: '', hint: -1, stageSolved: false,
+        kissed: false, confirmed: false, verdict: '', verdictOk: false, caseClosed: false,
+        clueGate: false, clueKissed: false, clueConfirmed: false
+      }),
+
+      // the secret room
+      stars: STARS.map((ch, i) => ({
+        ch,
+        color: i === 1 ? '#8d7ce8' : '#d3d0da',
+        opacity: s.lit > i ? 1 : 0.32,
+        glow: s.lit > i ? '0 0 22px rgba(141,124,232,.55)' : 'none',
+        tap: () => this.tapStar()
+      })),
+      revealed: s.doorFound,
+      revealOpacity: s.doorFound ? 1 : 0,
+
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

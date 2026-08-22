@@ -1,54 +1,62 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { PuzzleClue } from '../PuzzleClue';
 import { PuzzleHint } from '../PuzzleHint';
 import { pushToast } from '@/lib/eggBus';
 import { sound } from '@/lib/sounds';
 
-const WORD = 'STILL';
-const ANOMALY = 'ST1LL';
-const GRID_SIZE = 9;
-const ANOMALY_INDEX = 5;
+const LINES = [
+  'Sometimes we search too far.',
+  'Nothing hidden is truly invisible.',
+  'A thing may sit before thy very eyes.',
+  'Careless eyes see only what they expect.',
+  'Keep thy attention upon the ordinary.',
+  'Seek what once carried a taste of home.',
+];
+
+const OPTIONS = ['SNACKS', 'STACKS', 'SPARKS', 'SHACKS'];
+const ANSWER = 'SNACKS';
 
 export function Level2Pattern({ onComplete }: { onComplete: () => void }) {
+  const [picked, setPicked] = useState<string | null>(null);
   const [solved, setSolved] = useState(false);
-  const [wrongIndex, setWrongIndex] = useState<number | null>(null);
 
-  const cells = useMemo(
-    () => Array.from({ length: GRID_SIZE }, (_, i) => (i === ANOMALY_INDEX ? ANOMALY : WORD)),
-    []
-  );
-
-  const select = (i: number) => {
-    if (solved) return;
-    if (i === ANOMALY_INDEX) {
+  const select = (word: string) => {
+    setPicked(word);
+    if (word === ANSWER) {
       sound.success();
       setSolved(true);
       window.setTimeout(onComplete, 1400);
     } else {
       sound.error();
-      setWrongIndex(i);
-      pushToast('read it again.');
-      window.setTimeout(() => setWrongIndex(null), 500);
+      pushToast('read the beginnings, not the endings.');
     }
   };
 
   return (
     <div>
-      <p className="font-monigue max-w-md text-sm italic text-muted">
-        Nine words. Eight of them are the same word. Find the one that isn't.
-      </p>
+      <p className="font-monigue max-w-md text-sm italic text-muted">Read the beginnings, not the endings.</p>
 
-      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-        {cells.map((word, i) => (
+      <div className="mt-6 flex flex-col gap-1.5">
+        {LINES.map((line, i) => (
+          <p key={i} className="font-magnode text-sm text-parchment sm:text-base">
+            <span className="text-royal-vivid">{line.charAt(0)}</span>
+            {line.slice(1)}
+          </p>
+        ))}
+      </div>
+
+      <p className="font-nebulica mt-6 text-[10px] uppercase tracking-[0.3em] text-muted-dim">what word have you uncovered?</p>
+
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {OPTIONS.map((word) => (
           <button
-            key={i}
-            onClick={() => select(i)}
-            aria-label={`word ${i + 1}`}
-            className={`font-magnode rounded-xl border py-6 text-lg tracking-[0.15em] transition-colors sm:text-xl ${
-              solved && i === ANOMALY_INDEX
+            key={word}
+            onClick={() => select(word)}
+            className={`font-magnode rounded-xl border py-4 text-sm tracking-[0.15em] transition-colors ${
+              picked === word && word === ANSWER
                 ? 'border-royal-vivid bg-royal-vivid/10 text-royal-vivid'
-                : wrongIndex === i
+                : picked === word
                   ? 'border-brown-warm bg-brown-deep/20 text-muted'
                   : 'border-brown-warm/30 bg-surface/60 text-parchment hover:border-royal-vivid/40'
             }`}
@@ -60,14 +68,14 @@ export function Level2Pattern({ onComplete }: { onComplete: () => void }) {
 
       {solved ? (
         <div className="mt-6">
-          <PuzzleClue label="noticed">Some things get carried without a sound.</PuzzleClue>
+          <PuzzleClue label="uncovered">Something small, easy to forget, sweeter than the room let on.</PuzzleClue>
         </div>
       ) : (
         <PuzzleHint
           level={2}
           hints={[
-            'You’re reading it as a word. Read it as a shape instead.',
-            'One letter isn’t a letter at all — count from the top-left, third row, second column.',
+            'You don’t need to read every word. Just the first letter of every line.',
+            'S, N, A, C, K, S: six lines, six letters, one word.',
           ]}
         />
       )}
